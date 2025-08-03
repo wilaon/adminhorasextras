@@ -25,7 +25,7 @@ async function cargarEmpleados(forzar = false) {
             empleadosCache = data.empleados;
             cacheTimestamp = ahora;
 
-            console.log('Empleados cargados:',Object.keys(empleadosCache).length);
+            //console.log('Empleados cargados:',Object.keys(empleadosCache).length);
             return empleadosCache;
         }
         
@@ -40,8 +40,8 @@ async function cargarEmpleados(forzar = false) {
 function buscarEmpleado(dni) {
     if (!empleadosCache) return null;
 
-    console.log('Buscando DNI:', dni); // Para debug
-    console.log('Cache disponible:', Object.keys(empleadosCache)); // Para debug
+    //console.log('Buscando DNI:', dni); // Para debug
+    //console.log('Cache disponible:', Object.keys(empleadosCache)); // Para debug
     return empleadosCache[dni] || null;
 }
 

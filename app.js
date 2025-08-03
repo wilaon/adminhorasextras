@@ -43,6 +43,18 @@ function actualizarCalculoHoras() {
     }
 }
 
+function limpiarForm(){
+
+    elementos.form.reset();
+    elementos.fecha.value = obtenerFechaActual();
+    // 2. Limpiar mensaje de validación DNI
+    elementos.dniValidation.classList.remove('show');
+    elementos.nombre.readOnly = false;
+    // 4. Ocultar cuadro de horas
+    elementos.hoursInfo.classList.remove('show');
+
+}
+
 // Validar DNI
 function validarDNI(dni) {
     if (dni.length === CONFIG.DNI_LENGTH) {
@@ -103,6 +115,9 @@ async function procesarFormulario(e) {
         mostrarMensaje(elementos.successMessage, 'Asistencia registrada correctamente');
         elementos.form.reset();
         elementos.fecha.value = obtenerFechaActual();
+         elementos.dniValidation.classList.remove('show');
+        // 3. Habilitar campo nombre
+        elementos.nombre.readOnly = false;
         mostrarElemento(elementos.hoursInfo, false);
     } else {
         mostrarMensaje(elementos.errorMessage, 'Error al registrar asistencia');
