@@ -15,12 +15,17 @@ async function cargarEmpleados(forzar = false) {
     }
     
     try {
+        console.log('Cargando empleados....');
         const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getEmpleados`);
         const data = await response.json();
+
+        console.log('Respuesta del servidor...')
         
         if (data.success) {
             empleadosCache = data.empleados;
             cacheTimestamp = ahora;
+
+            console.log('Empleado cargados:',Object.keys(empleadosCache).length);
             return empleadosCache;
         }
         
@@ -34,7 +39,10 @@ async function cargarEmpleados(forzar = false) {
 // Buscar empleado en cache local
 function buscarEmpleado(dni) {
     if (!empleadosCache) return null;
-    return empleadosCache[dni] || null;
+
+    console.log('Buscando DNI:', dniFormateado); // Para debug
+    console.log('Cache disponible:', empleadosCache); // Para debug
+    return empleadosCache[dni] || empleadosCache[dniFormateado] || null;
 }
 
 // Guardar asistencia en Google Sheets

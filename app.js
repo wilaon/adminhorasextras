@@ -47,8 +47,9 @@ function actualizarCalculoHoras() {
 function validarDNI(dni) {
     if (dni.length === CONFIG.DNI_LENGTH) {
         const empleado = buscarEmpleado(dni);
+        console.log('empleado encontrado',empleado);
         
-        if (empleado) {
+        if (empleado && empleado.nombre) {
             elementos.nombre.value = empleado.nombre;
             elementos.nombre.readOnly = true;
             elementos.dniValidation.textContent = 'Empleado encontrado';
