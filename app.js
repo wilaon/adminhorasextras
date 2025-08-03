@@ -43,17 +43,7 @@ function actualizarCalculoHoras() {
     }
 }
 
-function limpiarForm(){
 
-    elementos.form.reset();
-    elementos.fecha.value = obtenerFechaActual();
-    // 2. Limpiar mensaje de validación DNI
-    elementos.dniValidation.classList.remove('show');
-    elementos.nombre.readOnly = false;
-    // 4. Ocultar cuadro de horas
-    elementos.hoursInfo.classList.remove('show');
-
-}
 
 // Validar DNI
 function validarDNI(dni) {
@@ -66,16 +56,19 @@ function validarDNI(dni) {
             elementos.nombre.readOnly = true;
             elementos.dniValidation.textContent = 'Empleado encontrado';
             elementos.dniValidation.className = 'validation-message success show';
+            elementos.submitBtn.disabled = false;
         } else {
             elementos.nombre.value = '';
             elementos.nombre.readOnly = false;
-            elementos.dniValidation.textContent = 'DNI no registrado - Ingrese nombre manualmente';
+            elementos.dniValidation.textContent = 'DNI no registrado - SOLICITAR REGISTRO';
             elementos.dniValidation.className = 'validation-message error show';
+            elementos.submitBtn.disabled = true;
         }
     } else {
         elementos.dniValidation.classList.remove('show');
         elementos.nombre.value = '';
         elementos.nombre.readOnly = false;
+        elementos.submitBtn.disabled = true;
     }
 }
 
@@ -115,7 +108,7 @@ async function procesarFormulario(e) {
         mostrarMensaje(elementos.successMessage, 'Asistencia registrada correctamente');
         elementos.form.reset();
         elementos.fecha.value = obtenerFechaActual();
-         elementos.dniValidation.classList.remove('show');
+        elementos.dniValidation.classList.remove('show');
         // 3. Habilitar campo nombre
         elementos.nombre.readOnly = false;
         mostrarElemento(elementos.hoursInfo, false);
