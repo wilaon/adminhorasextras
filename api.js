@@ -25,7 +25,7 @@ async function cargarEmpleados(forzar = false) {
             empleadosCache = data.empleados;
             cacheTimestamp = ahora;
 
-            console.log('Empleado cargados:',Object.keys(empleadosCache).length);
+            console.log('Empleados cargados:',Object.keys(empleadosCache).length);
             return empleadosCache;
         }
         
@@ -40,9 +40,9 @@ async function cargarEmpleados(forzar = false) {
 function buscarEmpleado(dni) {
     if (!empleadosCache) return null;
 
-    console.log('Buscando DNI:', dniFormateado); // Para debug
-    console.log('Cache disponible:', empleadosCache); // Para debug
-    return empleadosCache[dni] || empleadosCache[dniFormateado] || null;
+    console.log('Buscando DNI:', dni); // Para debug
+    console.log('Cache disponible:', Object.keys(empleadosCache)); // Para debug
+    return empleadosCache[dni] || null;
 }
 
 // Guardar asistencia en Google Sheets
