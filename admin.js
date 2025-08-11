@@ -39,7 +39,7 @@ function mostrarRegistrosEnTabla(registros) {
     }
 
     //Crea una fila por registro
-    registrosPagina.array.forEach((registro,index) => {
+    registrosPagina.forEach((registro,index) => {
         const indiceReal = inicio + index; // Índice real en el array completo
         const fila = document.createElement('tr');
         fila.innerHTML= `
