@@ -3,73 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Horas Extras</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Panel de Administración - Solicitud Horas Extras</title>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="admin-header">
             <h1>Control de Horas Extras</h1>
-            <div class="clock" id="clock"></div>
+            <button class="btn btn-primary" onclick="window.location.href='formulario.html'">
+                Ingresar
+            </button>
         </div>
-        
-        <div class="form-container">
-            <form id="attendanceForm">
-                <div class="form-group">
-                    <label>Fecha *</label>
-                    <input type="date" id="fecha" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>DNI (13 dígitos) *</label>
-                    <input type="text" id="dni" maxlength="13" pattern="[0-9]{13}" required placeholder="Ingrese DNI">
-                    <div class="validation-message" id="dniValidation"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Nombre Completo *</label>
-                    <input type="text" id="nombre" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Hora Entrada</label>
-                    <input type="time" id="horaEntrada">
-                </div>
-                
-                <div class="form-group">
-                    <label>Hora Salida</label>
-                    <input type="time" id="horaSalida">
-                </div>
-                
-                <div class="form-group">
-                    <label>Turno *</label>
-                    <select id="turno" required>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Observaciones</label>
-                    <textarea id="observaciones" rows="3" placeholder="Observaciones adicionales"></textarea>
-                </div>
-                
-                <button type="submit" class="btn" id="submitBtn">
-                    Registrar 
-                </button>
-            </form>
-            
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Procesando...</p>
+
+        <!-- Controls Bar -->
+        <div class="controls-bar">
+            <div class="controls-left">
+                <label>Mostrar</label>
+                <select id="entriesPerPage" onchange="cambiarEntradas()">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span>registros</span>
             </div>
             
-            <div class="message" id="successMessage"></div>
-            <div class="message" id="errorMessage"></div>
+            <div class="controls-right">
+                <label>Buscar:</label>
+                <input type="text" id="searchBox" placeholder="Buscar..." onkeyup="buscarEnTabla()">
+            </div>
+        </div>
+
+        <!-- Filtros adicionales -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label>Fecha Desde:</label>
+                <input type="date" id="fechaDesde">
+            </div>
+            <div class="filter-group">
+                <label>Fecha Hasta:</label>
+                <input type="date" id="fechaHasta">
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-primary" onclick="aplicarFiltros()">Filtrar</button>
+                <button class="btn btn-secondary" onclick="limpiarFiltros()">Limpiar</button>
+                <button class="btn btn-success" onclick="exportarExcel()">Exportar Excel</button>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-container">
+            <table id="tablaAsistencias">
+                <thead>
+                    <tr>
+                        <th onclick="ordenarTabla('fecha')">Fecha <span class="sort-icon">↕</span></th>
+                        <th onclick="ordenarTabla('dni')">DNI <span class="sort-icon">↕</span></th>
+                        <th onclick="ordenarTabla('nombre')">Nombre <span class="sort-icon">↕</span></th>
+                        <th onclick="ordenarTabla('entrada')">Entrada <span class="sort-icon">↕</span></th>
+                        <th onclick="ordenarTabla('salida')">Salida <span class="sort-icon">↕</span></th>
+                        <th onclick="ordenarTabla('horas')">Total Horas <span class="sort-icon">↕</span></th>
+                        <th onclick="ordenarTabla('turno')">Turno <span class="sort-icon">↕</span></th>
+                        <th>Observaciones</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody">
+                    <!-- Los datos se cargarán aquí dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Mostrando <span id="showingFrom">1</span> a <span id="showingTo">10</span> 
+                de <span id="totalRecords">0</span> registros
+            </div>
+            <div class="pagination-controls">
+                <button onclick="paginaAnterior()" id="btnAnterior">Anterior</button>
+                <span id="paginationNumbers"></span>
+                <button onclick="paginaSiguiente()" id="btnSiguiente">Siguiente</button>
+            </div>
         </div>
     </div>
 
+    <!-- Modal para editar -->
+    <div id="modalEditar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Registro</h2>
+                <span class="close" onclick="cerrarModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="formEditar">
+                    <input type="hidden" id="editIndex">
+                    
+                    <div class="form-group">
+                        <label>Fecha:</label>
+                        <input type="date" id="editFecha" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>DNI:</label>
+                        <input type="text" id="editDni" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="editNombre" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Hora Entrada:</label>
+                        <input type="time" id="editHoraEntrada">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Hora Salida:</label>
+                        <input type="time" id="editHoraSalida">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Turno:</label>
+                        <select id="editTurno" required>
+                            <option value="06:00-15:00">06:00 - 15:00</option>
+                            <option value="07:00-16:00">07:00 - 16:00</option>
+                            <option value="09:00-18:00">09:00 - 18:00</option>
+                            <option value="13:00-20:00">13:00 - 20:00</option>
+                            <option value="14:00-21:00">14:00 - 21:00</option>
+                            <option value="17:00-23:00">17:00 - 23:00</option>
+                            <option value="18:00-00:00">18:00 - 00:00</option>
+                            <option value="00:00-06:00">00:00 - 06:00</option>
+                            <option value="descanso1">1er Día Descanso</option>
+                            <option value="descanso2">2do Día Descanso</option>
+                            <option value="feriado">Feriado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Observaciones:</label>
+                        <textarea id="editObservaciones" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarEdicion()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminar -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Confirmar Eliminación</h2>
+                <span class="close" onclick="cerrarModalEliminar()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar este registro?</p>
+                <p class="text-danger">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="cerrarModalEliminar()">Cancelar</button>
+                <button class="btn btn-danger" onclick="confirmarEliminar()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Scripts -->
     <script src="config.js"></script>
     <script src="utils.js"></script>
-    <script src="api.js"></script>
-    <script src="app.js"></script>
+    <script src="admin-api.js"></script>
+    <script src="admin.js"></script>
 </body>
 </html>
