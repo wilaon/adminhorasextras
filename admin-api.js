@@ -11,7 +11,7 @@ async function obtenerRegistros() {
         if (data.success) {
             registrosHorasExtras = data.registro || [];
             mostrarRegistrosEnTabla(registrosHorasExtras);
-            console.log(`Se cargaron ${todosLosRegistros.length} `);
+            console.log("Se cargaron los registros");
         } else {
             alert("Error al cargar los registros")
         }
