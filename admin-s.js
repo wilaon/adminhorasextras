@@ -113,13 +113,13 @@ function buscarEnTabla() {
     const texto = document.getElementById('searchBox').value.toLowerCase();
     
     if (!texto) {
-        registrosFiltrados = [...todosLosRegistros];
+        mostrarDatos(todosLosRegistros);//registrosFiltrados = [...todosLosRegistros];
     } else {
         registrosFiltrados = todosLosRegistros.filter(registro => {
             return (
-                (registro.dni && registro.dni.toLowerCase().includes(texto)) ||
-                (registro.nombre && registro.nombre.toLowerCase().includes(texto)) ||
-                (registro.fecha && registro.fecha.includes(texto))
+                registro.dni && registro.dni.toLowerCase().includes(texto) ||
+                registro.nombre && registro.nombre.toLowerCase().includes(texto) ||
+                registro.fecha && registro.fecha.includes(texto)
             );
         });
     }
