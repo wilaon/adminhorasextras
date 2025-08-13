@@ -1,6 +1,6 @@
 let registrosHorasExtras = [];
 
-async function obtenerRegistros() {
+async function cargarRegistros() {
     try {
         // Mostrar loading mientras carga
         mostrarLoading(true);
