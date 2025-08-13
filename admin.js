@@ -43,14 +43,14 @@ function mostrarRegistrosEnTabla(registros) {
         const indiceReal = inicio + index; // Índice real en el array completo
         const fila = document.createElement('tr');
         fila.innerHTML= `
-            <td>${registro.fecha || '-'}</td>
-            <td>${registro.dni || '-'}</td>
-            <td>${registro.nombre || '-'}</td>
-            <td>${registro.horaEntrada || '-'}</td>
-            <td>${registro.horaSalida || '-'}</td>
-            <td>${registro.totalHoras || '-'}</td>
-            <td>${registro.turno || '-'}</td>
-            <td>${registro.observaciones || '-'}</td>
+            <td>${registro.FECHA || '-'}</td>
+            <td>${registro.DNI || '-'}</td>
+            <td>${registro.NOMBRE || '-'}</td>
+            <td>${registro.HORAENTRADA || '-'}</td>
+            <td>${registro.HORASALIDA || '-'}</td>
+            <td>${registro.TOTALHORAS || '-'}</td>
+            <td>${registro.TURNO || '-'}</td>
+            <td>${registro.OBSERVACIONES || '-'}</td>
             <td>
                 <button class="btn btn-edit" onclick="abrirModalEditar(${indiceReal})">Edit</button>
                 <button class="btn btn-delete" onclick="abrirModalEliminar(${indiceReal})">Del</button>
