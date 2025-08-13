@@ -116,10 +116,14 @@ function buscarEnTabla() {
         mostrarDatos(todosLosRegistros);//registrosFiltrados = [...todosLosRegistros];
     } else {
         registrosFiltrados = todosLosRegistros.filter(registro => {
+            const dni = String(registro.dni ?? '').toLowerCase();
+            const nombre = String(registro.nombre ?? '').toLowerCase();
+            const fecha = String(registro.fecha ?? '');
+
             return (
-                registro.dni && registro.dni.toLowerCase().includes(texto) ||
-                registro.nombre && registro.nombre.toLowerCase().includes(texto) ||
-                registro.fecha && registro.fecha.includes(texto)
+                dni.includes(texto) ||
+                nombre.includes(texto) ||
+                fecha.includes(texto)
             );
         });
     }
