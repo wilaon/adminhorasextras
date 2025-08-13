@@ -62,7 +62,7 @@ function mostrarRegistrosEnTabla(registros) {
     actualizarInfoPaginacion(inicio + 1,Math.min(fin,registrosFiltrados.length),registrosFiltrados.length)
 
     actualizarPaginacion();
-
+    console.log("listado registro")
 }
 
 
