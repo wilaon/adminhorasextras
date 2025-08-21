@@ -190,3 +190,18 @@ body {
     0% { transform: rotate(0deg); } 
     100% { transform: rotate(360deg); } 
 }
+
+
+.firma-container {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.firma-container canvas {
+    width: 100%;     /* siempre ocupará el ancho del formulario */
+    height: 130px;   /* altura para escritorio */
+    display: block;
+}
