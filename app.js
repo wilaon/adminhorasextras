@@ -9,6 +9,7 @@ const elementos = {
     horaEntrada: document.getElementById('horaEntrada'),
     horaSalida: document.getElementById('horaSalida'),
     turno: document.getElementById('turno'),
+    turnoIngeniero: document.getElementById('turnoIngeniero'),
     observaciones: document.getElementById('observaciones'),
     submitBtn: document.getElementById('submitBtn'),
     dniValidation: document.getElementById('dniValidation'),
@@ -20,7 +21,15 @@ const elementos = {
     loading: document.getElementById('loading'),
     successMessage: document.getElementById('successMessage'),
     errorMessage: document.getElementById('errorMessage'),
-    clock: document.getElementById('clock')
+    clock: document.getElementById('clock'),
+    firmaColab: document.getElementById('firmaColab'),
+    firmaIng: document.getElementById('firmaIng'),
+    veinticincoNocturno: document.getElementById('veinticincoNocturno'),
+    veinticinco5am7pm: document.getElementById('veinticinco5am7pm'),
+    cincuenta7pm5am: document.getElementById('cincuenta7pm5am'),
+    prolongacionNoct75: document.getElementById('prolongacionNoct75'),
+    feriadosDomingos100: document.getElementById('feriadosDomingos100'),
+    limpiarFirmaBtn:document.getElementById('limpiarFirma')
 };
 
 // Actualizar reloj
@@ -94,7 +103,10 @@ async function procesarFormulario(e) {
         horaEntrada: elementos.horaEntrada.value,
         horaSalida: elementos.horaSalida.value,
         turno: elementos.turno.value,
-        observaciones: elementos.observaciones.value
+        turnoIngeniero:elementos.turnoIngeniero.value,
+        observaciones: elementos.observaciones.value,
+        firmaColab:obtenerFirmaBase64('firmaColab'),
+        firmaIng:''
     };
     
     // Guardar
@@ -111,6 +123,8 @@ async function procesarFormulario(e) {
         elementos.dniValidation.classList.remove('show');
         // 3. Habilitar campo nombre
         elementos.nombre.readOnly = false;
+        //Limpiar canva firmaColab
+        limpiarFirma();
         mostrarElemento(elementos.hoursInfo, false);
     } else {
         mostrarMensaje(elementos.errorMessage, 'Error al registrar asistencia');
@@ -149,6 +163,10 @@ async function inicializar() {
     //llenar select Turnos
     const turnos = obtenerTurnos();
     llenarSelect(elementos.turno,turnos)
+
+    //Llenar select IngTurno
+    const turnoIngenieross = obtenerIngTurno();
+    llenarSelect(elementos.turnoIngeniero,turnoIngenieross);
     
     // Configurar eventos
     inicializarEventos();

@@ -50,6 +50,17 @@ async function guardarAsistencia(datos) {
     try {
         // Calcular horas
         const calculo = calcularHoras(datos.horaEntrada, datos.horaSalida);
+
+        let firmaParaGuardar = '';
+        if (datos.firmaColab && datos.firmaColab.length > 0) {
+            // Si la firma es muy larga, marcar que existe pero no guardar el contenido completo
+            if (datos.firmaColab.length > 5000) {
+                console.log('Firma muy grande, guardando indicador');
+                firmaParaGuardar = 'FIRMA_REGISTRADA_' + new Date().getTime();
+            } else {
+                firmaParaGuardar = datos.firmaColab;
+            }
+        }
         
         // Preparar fila
         const fila = [
@@ -59,13 +70,23 @@ async function guardarAsistencia(datos) {
             datos.nombre,
             datos.horaEntrada || '-',
             datos.horaSalida || '-',
-            calculo ? calculo.formatoTotal : '-',
-            calculo ? calculo.horasNormales.toFixed(2) : '0',
-            calculo ? calculo.horasExtra50.toFixed(2) : '0',
-            calculo ? calculo.horasExtra100.toFixed(2) : '0',
+            calculo ? calculo.totalHoras : '-',
+            calculo ? calculo.horasNormales : '0',
+            calculo ? calculo.horasExtra50 : '0',
+            calculo ? calculo.horasExtra100 : '0',
             datos.turno,
-            datos.observaciones || ''
+            datos.turnoIngeniero,
+            datos.observaciones || '',
+            firmaParaGuardar,
+            datos.firmaIng || '',
+            calculo ? calculo.veinticincoNocturno : '0',
+            calculo ? calculo.veinticinco5am7pm : '0',
+            calculo ? calculo.cincuenta7pm5am : '0',
+            calculo ? calculo.prolongacionNoct75 : '0',
+            calculo ? calculo.feriadosDomingos100 : '0'
         ];
+
+        console.log('Enviando fila:', fila);
         
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',
@@ -79,6 +100,7 @@ async function guardarAsistencia(datos) {
             })
         });
         
+        console.log('Asistencia guardada exitosamente');
         return { success: true };
     } catch (error) {
         console.error('Error:', error);

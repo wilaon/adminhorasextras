@@ -85,11 +85,19 @@ function mostrarDatos() {
             <td>${registro.fecha || '-'}</td>
             <td>${registro.dni || '-'}</td>
             <td>${registro.nombre || '-'}</td>
+             <td>${registro.turno || '-'}</td>
             <td>${registro.horaEntrada || '-'}</td>
             <td>${registro.horaSalida || '-'}</td>
             <td>${registro.totalHoras || '-'}</td>
-            <td>${registro.turno || '-'}</td>
+            <td>${registro.turnoIngeniero || '-'}</td>
             <td>${registro.observaciones || '-'}</td>
+            <td>${registro.firmaColab || '-'}</td>
+            <td>${registro.firmaIng || '-'}</td>
+            <td>${registro.veinticincoNocturno || '-'}</td>
+            <td>${registro.veinticinco5am7pm || '-'}</td>
+            <td>${registro.cincuenta7pm5am || '-'}</td>
+            <td>${registro.prolongacionNoct75 || '-'}</td>
+            <td>${registro.feriadosDomingos100 || '-'}</td>
             <td>
                 <button class="btn btn-edit" onclick="editarRegistro(${indiceReal})">Edit</button>
                 <button class="btn btn-delete" onclick="eliminarRegistro(${indiceReal})">Del</button>
