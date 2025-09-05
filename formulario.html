@@ -49,11 +49,7 @@
 
                 <div class="form-group">
                     <label>Ingeniero de Turno *</label>
-                    <select id="ingeniero" name="ingeniero" required>
-                        <option value="">Seleccionar Ingeniero...</option>
-                        <option value="ing1">Ing. Alba Rodruguez</option>
-                        <option value="ing2">Ing. Emerso Ortega</option>
-                        <option value="ing3">Ing. Jorge Medina</option>
+                    <select id="turnoIngeniero" name="ingeniero" required>
                     </select>
                 </div>
 
@@ -66,12 +62,12 @@
                 <div class="form-group">
                     <label>Firma Colaborador</label>
                     <div class="firma-container">
-                        <canvas id="firmaColaborador"></canvas>
+                        <canvas id="firmaColab"></canvas>
                     </div>
                     <br>
                     <label>Firma Ingeniero de Turno</label>
                     <div class="firma-container">
-                        <canvas id="firmaIngeniero" ></canvas>
+                        <canvas id="firmaIng" ></canvas>
                     </div>
                     <br>
                     <button type="button" onclick="limpiarFirma()">Limpiar firmas</button>
