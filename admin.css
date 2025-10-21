@@ -96,10 +96,14 @@ body {
 .table-container {
     overflow-x: auto;
     margin-bottom: 20px;
+
+    max-height: 500px;
+    overflow-y: au;
 }
 
 table {
-    width: 100%;
+    min-width: 100%;
+    width: auto;
     border-collapse: collapse;
     background-color: white;
 }
@@ -112,6 +116,7 @@ table th {
     border-bottom: 2px solid #dee2e6;
     cursor: pointer;
     user-select: none;
+    white-space: nowrap;
 }
 
 table th:hover {
@@ -127,6 +132,7 @@ table th:hover {
 table td {
     padding: 12px;
     border-bottom: 1px solid #dee2e6;
+    white-space: nowrap;
 }
 
 table tr:hover {

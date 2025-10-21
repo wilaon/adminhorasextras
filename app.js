@@ -22,14 +22,11 @@ const elementos = {
     successMessage: document.getElementById('successMessage'),
     errorMessage: document.getElementById('errorMessage'),
     clock: document.getElementById('clock'),
-    firmaColab: document.getElementById('firmaColab'),
-    firmaIng: document.getElementById('firmaIng'),
     veinticincoNocturno: document.getElementById('veinticincoNocturno'),
     veinticinco5am7pm: document.getElementById('veinticinco5am7pm'),
     cincuenta7pm5am: document.getElementById('cincuenta7pm5am'),
     prolongacionNoct75: document.getElementById('prolongacionNoct75'),
     feriadosDomingos100: document.getElementById('feriadosDomingos100'),
-    limpiarFirmaBtn:document.getElementById('limpiarFirma')
 };
 
 // Actualizar reloj
@@ -105,8 +102,7 @@ async function procesarFormulario(e) {
         turno: elementos.turno.value,
         turnoIngeniero:elementos.turnoIngeniero.value,
         observaciones: elementos.observaciones.value,
-        firmaColab:obtenerFirmaBase64('firmaColab'),
-        firmaIng:obtenerFirmaBase64('firmaIng')
+      
     };
     
     // Guardar
@@ -123,8 +119,6 @@ async function procesarFormulario(e) {
         elementos.dniValidation.classList.remove('show');
         // 3. Habilitar campo nombre
         elementos.nombre.readOnly = false;
-        //Limpiar canva firmaColab
-        limpiarFirma();
         mostrarElemento(elementos.hoursInfo, false);
     } else {
         mostrarMensaje(elementos.errorMessage, 'Error al registrar asistencia');
