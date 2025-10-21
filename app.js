@@ -53,7 +53,7 @@ function actualizarCalculoHoras() {
 
 // Validar DNI
 function validarDNI(dni) {
-    if (dni.length === CONFIG.DNI_LENGTH) {
+    if (dni.length === 15) {
         const empleado = buscarEmpleado(dni);
         console.log('empleado encontrado',empleado);
         //busca nombre del empleado en minuscula o MAYUSCULA
@@ -129,9 +129,27 @@ async function procesarFormulario(e) {
 function inicializarEventos() {
     // DNI input
     elementos.dni.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
+        let value = e.target.value.replace(/[^0-9]/g, ''); 
+        // Aplicar formato mientras escribe: 0000-0000-00000
+        if (value.length > 4 && value.length <= 8) {
+            value = value.substring(0, 4) + '-' + value.substring(4);
+        } else if (value.length > 8) {
+            value = value.substring(0, 4) + '-' + 
+                    value.substring(4, 8) + '-' + 
+                    value.substring(8, 13);
+        }
+        
         e.target.value = value;
-        validarDNI(value);
+        
+        // Validar solo si tiene 15 caracteres (incluyendo guiones)
+        if (value.length === 15) {
+            validarDNI(value);
+        } else {
+            elementos.dniValidation.classList.remove('show');
+            elementos.nombre.value = '';
+            elementos.nombre.readOnly = false;
+            elementos.submitBtn.disabled = true;
+        }
     });
     
     // Actualizar cálculo de horas

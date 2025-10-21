@@ -4,7 +4,7 @@ const CONFIG = {
     GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw3NROXGOTuY6scy9UT6G8YgQ0rkEdY6brIzj4YLg34syqZhlYdTpWPd1v4Ga5X27aEIQ/exec',
     
     // Configuración de validación
-    DNI_LENGTH: 13,
+    DNI_LENGTH: 15,
     
     // Cache
     CACHE_DURATION: 300000, // 5 minutos

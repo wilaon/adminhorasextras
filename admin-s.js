@@ -338,8 +338,6 @@ async function guardarEdicion() {
     
     // Preparar datos actualizados
     const datosActualizados = {
-        fechaOriginal: registro.fecha,
-        dniOriginal: registro.dni,
         fecha: document.getElementById('editFecha').value,
         dni: document.getElementById('editDni').value,
         nombre: document.getElementById('editNombre').value,
@@ -359,28 +357,18 @@ async function guardarEdicion() {
         // Calcular horas
         const calculo = calcularHoras(datosActualizados.horaEntrada, datosActualizados.horaSalida);
         
-        // Preparar fila actualizada
-        const fila = [
-            new Date().toISOString(),
-            datosActualizados.fecha,
-            datosActualizados.dni,
-            datosActualizados.nombre,
-            datosActualizados.horaEntrada || '-',
-            datosActualizados.horaSalida || '-',
-            calculo ? calculo.totalHoras : '-',
-            calculo ? calculo.horasNormales : '0',
-            calculo ? calculo.horasExtra50 : '0',
-            calculo ? calculo.horasExtra100 : '0',
-            datosActualizados.turno,
-            datosActualizados.turnoIngeniero,
-            datosActualizados.observaciones || '',
-            calculo ? calculo.veinticincoNocturno : '0',
-            calculo ? calculo.veinticinco5am7pm : '0',
-            calculo ? calculo.cincuenta7pm5am : '0',
-            calculo ? calculo.prolongacionNoct75 : '0',
-            calculo ? calculo.feriadosDomingos100 : '0'
-        ];
+        // Agregar cálculos
+        datosActualizados.totalHoras = calculo ? calculo.totalHoras : '-';
+        datosActualizados.horasNormales = calculo ? calculo.horasNormales : '0';
+        datosActualizados.horasExtra50 = calculo ? calculo.horasExtra50 : '0';
+        datosActualizados.horasExtra100 = calculo ? calculo.horasExtra100 : '0';
+        datosActualizados.veinticincoNocturno = calculo ? calculo.veinticincoNocturno : '0';
+        datosActualizados.veinticinco5am7pm = calculo ? calculo.veinticinco5am7pm : '0';
+        datosActualizados.cincuenta7pm5am = calculo ? calculo.cincuenta7pm5am : '0';
+        datosActualizados.prolongacionNoct75 = calculo ? calculo.prolongacionNoct75 : '0';
+        datosActualizados.feriadosDomingos100 = calculo ? calculo.feriadosDomingos100 : '0';
         
+        // USAR filaSheet (número de fila real en Google Sheets)
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -389,9 +377,8 @@ async function guardarEdicion() {
             },
             body: JSON.stringify({
                 action: 'actualizarAsistencia',
-                fechaOriginal: datosActualizados.fechaOriginal,
-                dniOriginal: datosActualizados.dniOriginal,
-                fila: fila
+                indiceFila: registro.filaSheet,  // ← CAMBIO CLAVE AQUÍ
+                datos: datosActualizados
             })
         });
         
@@ -435,8 +422,7 @@ async function confirmarEliminar() {
             },
             body: JSON.stringify({
                 action: 'eliminarAsistencia',
-                fecha: registro.fecha,
-                dni: registro.dni
+                indiceFila: registro.filaSheet  // ← USAR filaSheet
             })
         });
         
@@ -454,6 +440,7 @@ async function confirmarEliminar() {
         indiceAEliminar = null;
     }
 }
+
 
 // Exportar a Excel
 function exportarExcel() {
