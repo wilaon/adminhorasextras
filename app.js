@@ -172,13 +172,11 @@ async function inicializar() {
     // Cargar empleados
     await cargarEmpleados();
 
-    //llenar select Turnos
-    const turnos = obtenerTurnos();
-    llenarSelect(elementos.turno,turnos)
+    // Llenar select Turnos dinámicamente
+    await llenarSelectTurnos(elementos.turno);
 
-    //Llenar select IngTurno
-    const turnoIngenieross = obtenerIngTurno();
-    llenarSelect(elementos.turnoIngeniero,turnoIngenieross);
+    // Llenar select IngTurno dinámicamente
+    await llenarSelectIngenieros(elementos.turnoIngeniero);
     
     // Configurar eventos
     inicializarEventos();

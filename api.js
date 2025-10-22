@@ -60,6 +60,82 @@ function buscarEmpleado(dni) {
     return empleadosCache[dni] || null;
 }
 
+
+async function cargarTurnos() {
+    try {
+        console.log('Cargando turnos desde Sheets...');
+        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getTurnos`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('Turnos cargados:', data.turnos.length);
+            return data.turnos;
+        }
+        
+        throw new Error('Error al cargar turnos');
+    } catch (error) {
+        console.error('Error cargando turnos:', error);
+        // Retornar turnos por defecto si falla
+        return [
+            { id: '1', turno: '06:00-15:00' },
+            { id: '2', turno: '07:00-16:00' },
+            { id: '3', turno: '09:00-18:00' }
+        ];
+    }
+}
+
+
+
+async function cargarIngTurno() {
+    try {
+        console.log('Cargando ingenieros desde Sheets...');
+        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getIngTurno`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('Ingenieros cargados:', data.ingenieros.length);
+            return data.ingenieros;
+        }
+        
+        throw new Error('Error al cargar ingenieros');
+    } catch (error) {
+        console.error('Error cargando ingenieros:', error);
+        // Retornar ingenieros por defecto si falla
+        return [
+            { id: '1', nombre: 'Ing. Juan Pérez' },
+            { id: '2', nombre: 'Ing. Mario López' },
+            { id: '3', nombre: 'Ing. Ana Torres' }
+        ];
+    }
+}
+
+
+async function validarLoginServidor(usuario, password) {
+    try {
+        console.log('Validando login en servidor...');
+        const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'validarLogin',
+                usuario: usuario,
+                password: password
+            })
+        });
+        
+        const data = await response.json();
+        console.log('Respuesta de validación:', data);
+        
+        return data;
+    } catch (error) {
+        console.error('Error validando login:', error);
+        return { success: false, error: 'Error de conexión' };
+    }
+}
+
+
 // Guardar asistencia en Google Sheets
 async function guardarAsistencia(datos) {
     try {

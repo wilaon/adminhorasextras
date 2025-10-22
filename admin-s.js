@@ -4,11 +4,71 @@
 let todosLosRegistros = [];
 let registrosFiltrados = [];
 let paginaActual = 1;
-let registrosPorPagina = 10;
+let registrosPorPagina = 25;
+let sesionActual = null;
+
+
+
+// Verificar sesión al cargar
+function verificarSesion() {
+    const sesionStr = localStorage.getItem('sesion');
+    
+    if (!sesionStr) {
+        window.location.href = 'login.html';
+        return null;
+    }
+    
+    const sesion = JSON.parse(sesionStr);
+    
+    // Verificar si la sesión no ha expirado (24 horas)
+    const ahora = new Date().getTime();
+    const tiempoExpiracion = 1 * 60 * 60 * 1000; // 24 horas
+    
+    if (ahora - sesion.timestamp > tiempoExpiracion) {
+        cerrarSesion();
+        return null;
+    }
+    
+    return sesion;
+}
+
+// Cerrar sesión
+function cerrarSesion() {
+    localStorage.removeItem('sesion');
+    window.location.href = 'login.html';
+}
+
+
+
+
+// Mostrar información del usuario
+function mostrarInfoUsuario(sesion) {
+    const header = document.querySelector('.admin-header');
+    const infoUsuario = document.createElement('div');
+    infoUsuario.style.cssText = 'display: flex; align-items: center; gap: 15px;';
+    infoUsuario.innerHTML = `
+        <span style="color: white; font-size: 14px; font-weight: 500;">
+            👤 ${sesion.nombre} 
+            <span style="opacity: 0.9;">(${sesion.rol === 'admin' ? 'Administrador' : 'Ingeniero'})</span>
+        </span>
+        <button onclick="cerrarSesion()" class="btn btn-secondary" style="padding: 8px 16px;">
+            🚪 Cerrar Sesión
+        </button>
+    `;
+    
+    header.appendChild(infoUsuario);
+}
+
+
 
 // Función principal - Se ejecuta cuando carga la página
 window.onload = function() {
     console.log('Página cargada, iniciando...');
+    
+    sesionActual = verificarSesion();
+    if (!sesionActual) return;
+
+    mostrarInfoUsuario(sesionActual);
     
     // Establecer fechas por defecto
     const hoy = new Date();
@@ -31,8 +91,8 @@ async function cargarDatos() {
         document.getElementById('loadingOverlay').style.display = 'flex';
         
         // URL de tu Google Apps Script
-        const url = 'https://script.google.com/macros/s/AKfycbw3NROXGOTuY6scy9UT6G8YgQ0rkEdY6brIzj4YLg34syqZhlYdTpWPd1v4Ga5X27aEIQ/exec?action=obtenerAsistencias';
-        
+        //const url = 'https://script.google.com/macros/s/AKfycbw3NROXGOTuY6scy9UT6G8YgQ0rkEdY6brIzj4YLg34syqZhlYdTpWPd1v4Ga5X27aEIQ/exec?action=obtenerAsistencias';
+        const url = CONFIG.GOOGLE_SCRIPT_URL + '?action=obtenerAsistencias';
         console.log('Llamando a:', url);
         
         const response = await fetch(url);
@@ -65,19 +125,35 @@ async function cargarDatos() {
 function mostrarDatos() {
     const tbody = document.getElementById('tablaBody');
     tbody.innerHTML = '';
+
+    // Filtrar por ingeniero si no es admin
+    let registrosMostrar = [...registrosFiltrados];
+    if (sesionActual && sesionActual.rol !== 'admin') {
+        registrosMostrar = registrosFiltrados.filter(r => {
+            const turnoIng = (r.turnoIngeniero || '').replace(/^Ing\.\s*/i, '').trim();
+            const sesionUser = (sesionActual.user || '').replace(/^Ing\.\s*/i, '').trim();
+            
+            return turnoIng.toLowerCase() === sesionUser.toLowerCase();
+    });
+    console.log(`Ingeniero ${sesionActual.user} - Registros filtrados:`, registrosMostrar.length);
+    }
     
     // Calcular qué registros mostrar según la página
     const inicio = (paginaActual - 1) * registrosPorPagina;
     const fin = inicio + registrosPorPagina;
-    const registrosPagina = registrosFiltrados.slice(inicio, fin);
+    const registrosPagina = registrosMostrar.slice(inicio, fin);
     
     if (registrosPagina.length === 0) {
         tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No hay registros</td></tr>';
+        // Actualizar contadores en 0
+        document.getElementById('showingFrom').textContent = '0';
+        document.getElementById('showingTo').textContent = '0';
+        document.getElementById('totalRecords').textContent = '0';
         return;
     }
     
     // Crear filas
-    registrosPagina.forEach((registro, index) => {
+    /*registrosPagina.forEach((registro, index) => {
         const indiceReal = inicio + index;
         
         const tr = document.createElement('tr');
@@ -103,12 +179,42 @@ function mostrarDatos() {
         `;
         
         tbody.appendChild(tr);
+    });*/
+
+
+registrosPagina.forEach((registro) => {
+        const indiceReal = registrosFiltrados.indexOf(registro);
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${registro.fecha || '-'}</td>
+            <td>${registro.dni || '-'}</td>
+            <td>${registro.nombre || '-'}</td>
+            <td>${registro.turno || '-'}</td>
+            <td>${registro.horaEntrada || '-'}</td>
+            <td>${registro.horaSalida || '-'}</td>
+            <td>${registro.totalHoras || '-'}</td>
+            <td>${registro.turnoIngeniero || '-'}</td>
+            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${registro.observaciones}">${registro.observaciones || '-'}</td>
+            <td>${registro.veinticincoNocturno || '0'}</td>
+            <td>${registro.veinticinco5am7pm || '0'}</td>
+            <td>${registro.cincuenta7pm5am || '0'}</td>
+            <td>${registro.prolongacionNoct75 || '0'}</td>
+            <td>${registro.feriadosDomingos100 || '0'}</td>
+            <td>
+                <button class="btn-edit" onclick="editarRegistro(${indiceReal})" title="Editar">✏️</button>
+                <button class="btn-delete" onclick="eliminarRegistro(${indiceReal})" title="Eliminar">🗑️</button>
+            </td>
+        `;
+        
+        tbody.appendChild(tr);
     });
+
     
     // Actualizar info de paginación
-    document.getElementById('showingFrom').textContent = inicio + 1;
-    document.getElementById('showingTo').textContent = Math.min(fin, registrosFiltrados.length);
-    document.getElementById('totalRecords').textContent = registrosFiltrados.length;
+    document.getElementById('showingFrom').textContent = registrosMostrar.length > 0 ? inicio + 1 : 0;
+    document.getElementById('showingTo').textContent = Math.min(fin, registrosMostrar.length);
+    document.getElementById('totalRecords').textContent = registrosMostrar.length;
     
     // Actualizar botones de paginación
     actualizarPaginacion();
@@ -116,13 +222,13 @@ function mostrarDatos() {
 
 // Buscar en tabla
 function buscarEnTabla() {
-    const texto = document.getElementById('searchBox').value.toLowerCase();
+    const texto = document.getElementById('searchBox').value.toLowerCase().replace(/[-\s]/g, '');
     
     if (!texto) {
-        mostrarDatos(todosLosRegistros);//registrosFiltrados = [...todosLosRegistros];
+        registrosFiltrados = [...todosLosRegistros];
     } else {
         registrosFiltrados = todosLosRegistros.filter(registro => {
-            const dni = String(registro.dni ?? '').toLowerCase();
+            const dni = String(registro.dni ?? '').toLowerCase().replace(/[-\s]/g, '');
             const nombre = String(registro.nombre ?? '').toLowerCase();
             const fecha = String(registro.fecha ?? '');
 
@@ -164,6 +270,9 @@ function limpiarFiltros() {
     mostrarDatos();
 }
 
+
+
+
 // Cambiar cantidad de entradas por página
 function cambiarEntradas() {
     registrosPorPagina = parseInt(document.getElementById('entriesPerPage').value);
@@ -180,7 +289,16 @@ function paginaAnterior() {
 }
 
 function paginaSiguiente() {
-    const totalPaginas = Math.ceil(registrosFiltrados.length / registrosPorPagina);
+     let registrosMostrar = [...registrosFiltrados];
+    if (sesionActual && sesionActual.rol !== 'admin') {
+        registrosMostrar = registrosMostrar.filter(r => {
+            const turnoIng = (r.turnoIngeniero || '').replace(/^Ing\.\s*/i, '').trim();
+            const sesionUser = (sesionActual.user || '').replace(/^Ing\.\s*/i, '').trim();
+            return turnoIng.toLowerCase() === sesionUser.toLowerCase();
+        });
+    }
+    
+    const totalPaginas = Math.ceil(registrosMostrar.length / registrosPorPagina);
     if (paginaActual < totalPaginas) {
         paginaActual++;
         mostrarDatos();
@@ -188,6 +306,15 @@ function paginaSiguiente() {
 }
 
 function actualizarPaginacion() {
+    // APLICAR EL MISMO FILTRO AQUÍ
+    let registrosMostrar = [...registrosFiltrados];
+    if (sesionActual && sesionActual.rol !== 'admin') {
+        registrosMostrar = registrosMostrar.filter(r => {
+            const turnoIng = (r.turnoIngeniero || '').replace(/^Ing\.\s*/i, '').trim();
+            const sesionUser = (sesionActual.user || '').replace(/^Ing\.\s*/i, '').trim();
+            return turnoIng.toLowerCase() === sesionUser.toLowerCase();
+        });
+    }
     const totalPaginas = Math.ceil(registrosFiltrados.length / registrosPorPagina);
     
     document.getElementById('btnAnterior').disabled = paginaActual === 1;
@@ -211,8 +338,10 @@ function actualizarPaginacion() {
 }
 
 
+
+
 // Funciones de control de Modales
-function abrirModal(modalId) {
+async function abrirModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'block';
@@ -221,13 +350,24 @@ function abrirModal(modalId) {
         if (modalId === 'nuevoRegistroModal') {
             document.getElementById('successMessage').textContent = '';
             document.getElementById('errorMessage').textContent = '';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('attendanceForm').reset();
             document.getElementById('fecha').value = obtenerFechaActual();
             
-            // Cargar empleados si no están cargados
-            if (!empleadosCache) {
-                cargarEmpleados();
+            // CARGAR TURNOS E INGENIEROS DINÁMICAMENTE
+            await llenarSelectTurnos(document.getElementById('turno'));
+            await llenarSelectIngenieros(document.getElementById('turnoIngeniero'));
+            
+            const dniValidation = document.getElementById('dniValidation');
+            if (dniValidation) {
+                dniValidation.classList.remove('show');
             }
+
+            // Cargar empleados si no están cargados
+            /*if (!empleadosCache) {
+                cargarEmpleados();
+            }*/
         }
     }
 }
@@ -259,6 +399,7 @@ async function guardarNuevoRegistro() {
     if (!horaEntrada && !horaSalida) {
         document.getElementById('errorMessage').textContent = 'Ingrese al menos hora de entrada o salida';
         document.getElementById('errorMessage').style.display = 'block';
+        document.getElementById('successMessage').style.display = 'none';
         return;
     }
     
@@ -303,7 +444,7 @@ async function guardarNuevoRegistro() {
 }
 
 // Funciones para editar registro
-function editarRegistro(indice) {
+async function editarRegistro(indice) {
     const registro = registrosFiltrados[indice];
     
     console.log('Editando registro:', registro);
@@ -317,18 +458,17 @@ function editarRegistro(indice) {
     document.getElementById('editHoraSalida').value = registro.horaSalida || '';
     document.getElementById('editObservaciones').value = registro.observaciones || '';
     
-    // Llenar select de turno
-    const turnosEdit = obtenerTurnos();
-    llenarSelect(document.getElementById('editTurno'), turnosEdit);
+    /// CARGAR TURNOS E INGENIEROS DINÁMICAMENTE
+    await llenarSelectTurnos(document.getElementById('editTurno'));
     document.getElementById('editTurno').value = registro.turno || '';
     
-    // Llenar select de ingeniero
-    const ingTurnoEdit = obtenerIngTurno();
-    llenarSelect(document.getElementById('editTurnoIngeniero'), ingTurnoEdit);
+    await llenarSelectIngenieros(document.getElementById('editTurnoIngeniero'));
     document.getElementById('editTurnoIngeniero').value = registro.turnoIngeniero || '';
-    
-    // Abrir modal
-    abrirModal('modalEditar');
+    // Abrir modal después de cargar todo
+    const modalEditar = document.getElementById('modalEditar');
+    if (modalEditar) {
+        modalEditar.style.display = 'block';
+    }
 }
 
 // Guardar edición
@@ -444,27 +584,66 @@ async function confirmarEliminar() {
 
 // Exportar a Excel
 function exportarExcel() {
-    if (registrosFiltrados.length === 0) {
+    let registrosExportar = [...registrosFiltrados];
+    
+    // Si es ingeniero, filtrar sus registros
+    if (sesionActual && sesionActual.rol !== 'admin') {
+        registrosExportar = registrosExportar.filter(r => {
+            const turnoIng = (r.turnoIngeniero || '').replace(/^Ing\.\s*/i, '').trim();
+            const sesionUser = (sesionActual.user || '').replace(/^Ing\.\s*/i, '').trim();
+            return turnoIng.toLowerCase() === sesionUser.toLowerCase();
+        });
+        console.log(`Exportando ${registrosExportar.length} registros del ingeniero ${sesionActual.user}`);
+    }
+    
+    if (registrosExportar.length === 0) {
         alert('No hay datos para exportar');
         return;
     }
     
-    let csv = 'Fecha,DNI,Nombre,Entrada,Salida,Total Horas,Turno,Observaciones\n';
+    // BOM para UTF-8 (para que Excel reconozca acentos)
+    let csv = '\uFEFF';
     
-    registrosFiltrados.forEach(r => {
-        csv += `${r.fecha},${r.dni},${r.nombre},${r.horaEntrada},${r.horaSalida},${r.totalHoras},${r.turno},"${r.observaciones || ''}"\n`;
+    // Encabezados
+    csv += 'Fecha,DNI,Nombre,Turno,Hora Entrada,Hora Salida,Total Horas,Horas Normales,Horas Extra 50%,Horas Extra 100%,Ingeniero de Turno,Observaciones,';
+    csv += '25% Nocturno,25% (5am-7pm),50% (7pm-5am),75% Prolongación Nocturna,100% Feriados/Domingos\n';
+    
+    // Datos
+    registrosExportar.forEach(r => {
+        csv += `${r.fecha || ''},`;
+        csv += `${r.dni || ''},`;
+        csv += `"${r.nombre || ''}",`;  // Comillas para nombres con comas
+        csv += `${r.turno || ''},`;
+        csv += `${r.horaEntrada || ''},`;
+        csv += `${r.horaSalida || ''},`;
+        csv += `${r.totalHoras || ''},`;
+        csv += `${r.horasNormales || '0'},`;
+        csv += `${r.horasExtra50 || '0'},`;
+        csv += `${r.horasExtra100 || '0'},`;
+        csv += `"${r.turnoIngeniero || ''}",`;  // Comillas para nombres con comas
+        csv += `"${(r.observaciones || '').replace(/"/g, '""')}",`;  // Escapar comillas dobles
+        csv += `${r.veinticincoNocturno || '0'},`;
+        csv += `${r.veinticinco5am7pm || '0'},`;
+        csv += `${r.cincuenta7pm5am || '0'},`;
+        csv += `${r.prolongacionNoct75 || '0'},`;
+        csv += `${r.feriadosDomingos100 || '0'}\n`;
     });
     
-    const blob = new Blob([csv], { type: 'text/csv' });
+    // Crear archivo con codificación UTF-8
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `asistencia_${new Date().toISOString().split('T')[0]}.csv`;
+    
+    // Nombre del archivo con fecha y usuario
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    const nombreUsuario = sesionActual.rol === 'admin' ? 'todos' : sesionActual.user.replace(/[^a-zA-Z0-9]/g, '_');
+    a.download = `horas_extras_${nombreUsuario}_${fechaHoy}.csv`;
+    
+    document.body.appendChild(a);
     a.click();
-}
-
-// Ordenar tabla (simplificado)
-function ordenarTabla(columna) {
-    console.log('Ordenar por:', columna);
-    // Implementar después si es necesario
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    console.log(`✓ Exportados ${registrosExportar.length} registros a CSV`);
 }

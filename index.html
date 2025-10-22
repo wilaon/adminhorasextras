@@ -11,8 +11,10 @@
       <!-- Header -->
       <div class="admin-header">
         <h1>Control de Horas Extras</h1>
-        <button class="btn btn-primary" id="ingresarBtn" onclick="abrirModal('nuevoRegistroModal')">
-          Ingresar
+      </div>
+      <div>
+        <button class="btn btn-primary" style="margin-bottom: 20px;" id="ingresarBtn" onclick="abrirModal('nuevoRegistroModal')">
+        Ingresar Solicitud
         </button>
       </div>
 
@@ -95,19 +97,19 @@
               <th>Observaciones</th>
            
               <th onclick="ordenarTabla('veinticincoNocturno')">
-                25% Nocturno <span class="sort-icon"></span>
+                25% Noct <span class="sort-icon"></span>
               </th>
               <th onclick="ordenarTabla('veinticinco5am7pm')">
-                25% (5a.m - 7p.m) <span class="sort-icon"></span>
+                25% (5am-7pm) <span class="sort-icon"></span>
               </th>
               <th onclick="ordenarTabla('cincuenta7pm5am')">
-                50% (7p.m - 5a.m) <span class="sort-icon"></span>
+                50% (7pm-5am) <span class="sort-icon"></span>
               </th>
               <th onclick="ordenarTabla('prolongacionNoct75')">
-                75% Prolong Nocturna <span class="sort-icon"></span>
+                75% Prolong <span class="sort-icon"></span>
               </th>
               <th onclick="ordenarTabla('feriadosDomingos100')">
-                100% Feriados/Domingos <span class="sort-icon"></span>
+                100% F/D <span class="sort-icon"></span>
               </th>
               <th>Acciones</th>
             </tr>
@@ -160,7 +162,7 @@
                 <input
                   type="text"
                   id="dni"
-                  maxlength="15"
+                  maxlength="1"
                   required
                   placeholder="####-####-#####"
                 />
@@ -287,14 +289,14 @@
       <div class="modal-content modal-small">
         <div class="modal-header">
           <h2>Confirmar Eliminación</h2>
-          <span class="close" onclick="cerrarModalEliminar()">&times;</span>
+          <span class="close" onclick="cerrarModal('modalEliminar')">&times;</span>
         </div>
         <div class="modal-body">
           <p>¿Está seguro de que desea eliminar este registro?</p>
           <p class="text-danger">Esta acción no se puede deshacer.</p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="cerrarModalEliminar()">
+          <button class="btn btn-secondary" onclick="cerrarModal('modalEliminar')">
             Cancelar
           </button>
           <button class="btn btn-danger" onclick="confirmarEliminar()">

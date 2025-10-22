@@ -82,24 +82,39 @@ function mostrarMensaje(elemento, texto, duracion = 5000) {
 }
 
 
-// Turnos
-function obtenerTurnos(){
-    return [
-        { value: '', texto: 'Seleccionar turno...' },
-        { value: '06:00-15:00', texto: '06:00 - 15:00' },
-        { value: '07:00-16:00', texto: '07:00 - 16:00' },
-        { value: '09:00-18:00', texto: '09:00 - 18:00' },
-        { value: '13:00-20:00', texto: '13:00 - 20:00' },
-        { value: '14:00-21:00', texto: '14:00 - 21:00' },
-        { value: '17:00-23:00', texto: '17:00 - 23:00' },
-        { value: '18:00-00:00', texto: '18:00 - 00:00' },
-        { value: '00:00-06:00', texto: '00:00 - 06:00' },
-        { value: 'descanso1', texto: '1er Día Descanso' },
-        { value: 'descanso2', texto: '2do Día Descanso' },
-        { value: 'feriado', texto: 'Feriado' }
-    ];
+// Llenar un select con opciones dinámicas
+async function llenarSelectTurnos(selectElement) {
+    if (!selectElement) return;
+    
+    selectElement.innerHTML = '<option value="">Cargando turnos...</option>';
+    
+    const turnos = await cargarTurnos();
+    
+    selectElement.innerHTML = '<option value="">Seleccionar turno...</option>';
+    turnos.forEach(turno => {
+        const option = document.createElement('option');
+        option.value = turno.turno;
+        option.textContent = turno.turno;
+        selectElement.appendChild(option);
+    });
 }
 
+// Llenar select de ingenieros
+async function llenarSelectIngenieros(selectElement) {
+    if (!selectElement) return;
+    
+    selectElement.innerHTML = '<option value="">Cargando ingenieros...</option>';
+    
+    const ingenieros = await cargarIngTurno();
+    
+    selectElement.innerHTML = '<option value="">Seleccionar ingeniero...</option>';
+    ingenieros.forEach(ing => {
+        const option = document.createElement('option');
+        option.value = ing.nombre;
+        option.textContent = ing.nombre;
+        selectElement.appendChild(option);
+    });
+}
 
 // Llenar select
 function llenarSelect(selectElement, opciones){
@@ -109,19 +124,9 @@ function llenarSelect(selectElement, opciones){
 
     opciones.forEach(opcion => {
         const option = document.createElement('option');
-        option.value = opcion.value;
-        option.textContent = opcion.texto;
+        option.value = opcion.value || opcion.turno || option.nombre;
+        option.textContent = opcion.texto || opcion.turno || option.nombre;
         selectElement.appendChild(option);
     });
-}
-
-
-function obtenerIngTurno(){
-    return [
-        { value: '', texto: 'Seleccionar Ingeniero...' },
-        { value: 'juanperez', texto: 'Ing. Juan Pérez' },
-        { value: 'mariolopez', texto: 'Ing. Mario López' },
-        { value: 'anatorres', texto: 'Ing. Ana Torres' }
-    ];
 }
 
