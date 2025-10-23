@@ -193,20 +193,25 @@ registrosPagina.forEach((registro) => {
 
 // Buscar en tabla
 function buscarEnTabla() {
-    const texto = document.getElementById('searchBox').value.toLowerCase().replace(/[-\s]/g, '');
+    const texto = document.getElementById('searchBox').value.toLowerCase();
     
     if (!texto) {
         registrosFiltrados = [...todosLosRegistros];
     } else {
+        const textoLimpio = texto.replace(/[-\s]/g, '');
         registrosFiltrados = todosLosRegistros.filter(registro => {
             const dni = String(registro.dni ?? '').toLowerCase().replace(/[-\s]/g, '');
             const nombre = String(registro.nombre ?? '').toLowerCase();
             const fecha = String(registro.fecha ?? '');
+            const turno = String(registro.turno ?? '').toLowerCase();
+            const ingeniero = String(registro.turnoIngeniero ?? '').toLowerCase();
 
             return (
-                dni.includes(texto) ||
+                dni.includes(textoLimpio) ||
                 nombre.includes(texto) ||
-                fecha.includes(texto)
+                fecha.includes(texto) ||
+                turno.includes(texto) ||
+                ingeniero.includes(texto)
             );
         });
     }
