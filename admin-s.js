@@ -52,7 +52,7 @@ function mostrarInfoUsuario(sesion) {
             <span style="opacity: 0.9;">(${sesion.rol === 'admin' ? 'Administrador' : 'Ingeniero'})</span>
         </span>
         <button onclick="cerrarSesion()" class="btn btn-secondary" style="padding: 8px 16px;">
-            🚪 Cerrar Sesión
+             Cerrar Sesión
         </button>
     `;
     
@@ -151,35 +151,6 @@ function mostrarDatos() {
         document.getElementById('totalRecords').textContent = '0';
         return;
     }
-    
-    // Crear filas
-    /*registrosPagina.forEach((registro, index) => {
-        const indiceReal = inicio + index;
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${registro.fecha || '-'}</td>
-            <td>${registro.dni || '-'}</td>
-            <td>${registro.nombre || '-'}</td>
-             <td>${registro.turno || '-'}</td>
-            <td>${registro.horaEntrada || '-'}</td>
-            <td>${registro.horaSalida || '-'}</td>
-            <td>${registro.totalHoras || '-'}</td>
-            <td>${registro.turnoIngeniero || '-'}</td>
-            <td>${registro.observaciones || '-'}</td>
-            <td>${registro.veinticincoNocturno || '-'}</td>
-            <td>${registro.veinticinco5am7pm || '-'}</td>
-            <td>${registro.cincuenta7pm5am || '-'}</td>
-            <td>${registro.prolongacionNoct75 || '-'}</td>
-            <td>${registro.feriadosDomingos100 || '-'}</td>
-            <td>
-                <button class="btn btn-edit" onclick="editarRegistro(${indiceReal})">Edit</button>
-                <button class="btn btn-delete" onclick="eliminarRegistro(${indiceReal})">Del</button>
-            </td>
-        `;
-        
-        tbody.appendChild(tr);
-    });*/
 
 
 registrosPagina.forEach((registro) => {

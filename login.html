@@ -254,7 +254,7 @@
                     usersArray.forEach(user => {
                         const option = document.createElement('option');
                         option.value = user.User;
-                        const rol = (user.Rol === '1' || user.Rol === 1) ? '👑 Admin' : '🔧 Ingeniero';
+                        const rol = (user.Rol === '1' || user.Rol === 1) ? 'Admin' : 'Ingeniero';
                         option.textContent = `${user.User} (${rol})`;
                         selectUsuario.appendChild(option);
                     });
