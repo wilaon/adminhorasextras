@@ -93,12 +93,10 @@ async function cargarDatos() {
         // URL de tu Google Apps Script
         //const url = 'https://script.google.com/macros/s/AKfycbw3NROXGOTuY6scy9UT6G8YgQ0rkEdY6brIzj4YLg34syqZhlYdTpWPd1v4Ga5X27aEIQ/exec?action=obtenerAsistencias';
         const url = CONFIG.GOOGLE_SCRIPT_URL + '?action=obtenerAsistencias';
-        console.log('Llamando a:', url);
         
         const response = await fetch(url);
         const data = await response.json();
         
-        console.log('Datos recibidos:', data);
         
         if (data.success && data.registros) {
             todosLosRegistros = data.registros;
@@ -464,7 +462,7 @@ async function guardarEdicion() {
         observaciones: document.getElementById('editObservaciones').value
     };
     
-    console.log('Actualizando con datos:', datosActualizados);
+   
     
     // Mostrar loading
     document.getElementById('loadingOverlay').style.display = 'flex';
