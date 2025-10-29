@@ -484,16 +484,13 @@ async function guardarEdicion() {
         if (resultado.success) {
 
 
-            document.getElementById('successMessage').textContent = '✓ Registro Actualizado correctamente';
-            document.getElementById('successMessage').style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
+            console.log('✓ Registro actualizado correctamente');
             
-            // Esperar 1 segundos, cerrar modal y recargar
-            setTimeout(() => {
-                cerrarModal('modalEditar');
-                cargarDatos();
-            }, 1000);
-
+            // Cerrar modal
+            cerrarModal('modalEditar');
+            
+            // Recargar datos
+            await cargarDatos();
             
         } else {
             console.error('Error del servidor:', resultado.error);
