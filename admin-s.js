@@ -529,7 +529,7 @@ async function confirmarEliminar() {
         // ============================================
         // CAMBIO: USAR GET EN LUGAR DE POST
         // ============================================
-        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=eliminarAsistencia&indiceFila=${registro}`;
+        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=eliminarAsistencia&indiceFila=${registro.filaSheet}`;
         
         const response = await fetch(url);
         const resultado = await response.json();
@@ -560,8 +560,6 @@ async function confirmarEliminar() {
         // Ocultar loading
         document.getElementById('loadingOverlay').style.display = 'none';
     }
-    
-
 
 }
 
