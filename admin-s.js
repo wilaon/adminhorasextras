@@ -90,8 +90,6 @@ async function cargarDatos() {
         // Mostrar loading
         document.getElementById('loadingOverlay').style.display = 'flex';
         
-        // URL de tu Google Apps Script
-        //const url = 'https://script.google.com/macros/s/AKfycbw3NROXGOTuY6scy9UT6G8YgQ0rkEdY6brIzj4YLg34syqZhlYdTpWPd1v4Ga5X27aEIQ/exec?action=obtenerAsistencias';
         const url = CONFIG.GOOGLE_SCRIPT_URL + '?action=obtenerAsistencias';
         
         const response = await fetch(url);
@@ -392,7 +390,7 @@ async function guardarNuevoRegistro() {
         observaciones: document.getElementById('observaciones').value
     };
     
-    console.log('Guardando datos:', datos);
+    
     
     // Guardar usando la función de api.js
     const resultado = await guardarAsistencia(datos);
@@ -405,11 +403,11 @@ async function guardarNuevoRegistro() {
         document.getElementById('successMessage').style.display = 'block';
         document.getElementById('errorMessage').style.display = 'none';
         
-        // Esperar 1.5 segundos, cerrar modal y recargar
+        // Esperar 1 segundos, cerrar modal y recargar
         setTimeout(() => {
             cerrarModal('nuevoRegistroModal');
             cargarDatos();
-        }, 1500);
+        }, 1000);
     } else {
         document.getElementById('errorMessage').textContent = '✗ Error al guardar el registro';
         document.getElementById('errorMessage').style.display = 'block';
@@ -421,7 +419,7 @@ async function guardarNuevoRegistro() {
 async function editarRegistro(indice) {
     const registro = registrosFiltrados[indice];
     
-    console.log('Editando registro:', registro);
+    
     
     // Llenar formulario de edición
     document.getElementById('editIndex').value = indice;
@@ -462,25 +460,10 @@ async function guardarEdicion() {
         observaciones: document.getElementById('editObservaciones').value
     };
     
-   
-    
     // Mostrar loading
     document.getElementById('loadingOverlay').style.display = 'flex';
     
     try {
-        // Calcular horas
-        const calculo = calcularHoras(datosActualizados.horaEntrada, datosActualizados.horaSalida);
-        
-        // Agregar cálculos
-        datosActualizados.totalHoras = calculo ? calculo.totalHoras : '-';
-        datosActualizados.horasNormales = calculo ? calculo.horasNormales : '0';
-        datosActualizados.horasExtra50 = calculo ? calculo.horasExtra50 : '0';
-        datosActualizados.horasExtra100 = calculo ? calculo.horasExtra100 : '0';
-        datosActualizados.veinticincoNocturno = calculo ? calculo.veinticincoNocturno : '0';
-        datosActualizados.veinticinco5am7pm = calculo ? calculo.veinticinco5am7pm : '0';
-        datosActualizados.cincuenta7pm5am = calculo ? calculo.cincuenta7pm5am : '0';
-        datosActualizados.prolongacionNoct75 = calculo ? calculo.prolongacionNoct75 : '0';
-        datosActualizados.feriadosDomingos100 = calculo ? calculo.feriadosDomingos100 : '0';
         
         // USAR filaSheet (número de fila real en Google Sheets)
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
@@ -495,6 +478,8 @@ async function guardarEdicion() {
                 datos: datosActualizados
             })
         });
+
+
         
         alert('✓ Registro actualizado correctamente');
         cerrarModal('modalEditar');
@@ -510,11 +495,13 @@ async function guardarEdicion() {
     }
 }
 
+
 // Eliminar registro
 function eliminarRegistro(indice) {
     indiceAEliminar = indice;
     abrirModal('modalEliminar');
 }
+
 
 // Confirmar eliminación
 async function confirmarEliminar() {
@@ -579,7 +566,7 @@ function exportarExcel() {
     let csv = '\uFEFF';
     
     // Encabezados
-    csv += 'Fecha,DNI,Nombre,Turno,Hora Entrada,Hora Salida,Total Horas,Horas Normales,Horas Extra 50%,Horas Extra 100%,Ingeniero de Turno,Observaciones,';
+    csv += 'Fecha,DNI,Nombre,Turno,Hora Entrada,Hora Salida,Total Horas,,Ingeniero de Turno,Observaciones,';
     csv += '25% Nocturno,25% (5am-7pm),50% (7pm-5am),75% Prolongación Nocturna,100% Feriados/Domingos\n';
     
     // Datos
@@ -591,9 +578,6 @@ function exportarExcel() {
         csv += `${r.horaEntrada || ''},`;
         csv += `${r.horaSalida || ''},`;
         csv += `${r.totalHoras || ''},`;
-        csv += `${r.horasNormales || '0'},`;
-        csv += `${r.horasExtra50 || '0'},`;
-        csv += `${r.horasExtra100 || '0'},`;
         csv += `"${r.turnoIngeniero || ''}",`;  // Comillas para nombres con comas
         csv += `"${(r.observaciones || '').replace(/"/g, '""')}",`;  // Escapar comillas dobles
         csv += `${r.veinticincoNocturno || '0'},`;

@@ -177,7 +177,7 @@ body {
    ============================================ */
 .table-container {
     overflow-x: auto;
-    max-height: 400px; /* <--- Altura máxima (ajusta 400px a tu gusto) */
+    max-height: 450px; /* <--- Altura máxima (ajusta 400px a tu gusto) */
     overflow-y: auto;  /* <--- Habilita la barra de desplazamiento vertical */
     margin-bottom: 16px;
     border-radius: 10px;

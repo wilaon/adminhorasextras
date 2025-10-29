@@ -1,7 +1,7 @@
 // Configuración global del sistema
 const CONFIG = {
     // URL del Google Apps Script
-    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw3NROXGOTuY6scy9UT6G8YgQ0rkEdY6brIzj4YLg34syqZhlYdTpWPd1v4Ga5X27aEIQ/exec',
+    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxixlLp8NTv_V_CBiJvxPxrWZBo6ESqs7ocEw_9yyUsTxudNiURyEvTcP1qQxwnagDCFw/exec',
     
     // Configuración de validación
     DNI_LENGTH: 15,
@@ -11,5 +11,5 @@ const CONFIG = {
     
     // Configuración de horas
     HORAS_NORMALES_DIA: 8,
-    HORAS_EXTRA_50_LIMITE: 10
+   
 };

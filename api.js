@@ -72,12 +72,7 @@ async function cargarTurnos() {
         throw new Error('Error al cargar turnos');
     } catch (error) {
         console.error('Error cargando turnos:', error);
-        // Retornar turnos por defecto si falla
-        return [
-            { id: '1', turno: '06:00-15:00' },
-            { id: '2', turno: '07:00-16:00' },
-            { id: '3', turno: '09:00-18:00' }
-        ];
+       
     }
 }
 
@@ -97,12 +92,7 @@ async function cargarIngTurno() {
         throw new Error('Error al cargar ingenieros');
     } catch (error) {
         console.error('Error cargando ingenieros:', error);
-        // Retornar ingenieros por defecto si falla
-        return [
-            { id: '1', nombre: 'Ing. Juan Pérez' },
-            { id: '2', nombre: 'Ing. Mario López' },
-            { id: '3', nombre: 'Ing. Ana Torres' }
-        ];
+      
     }
 }
 
@@ -136,8 +126,7 @@ async function validarLoginServidor(usuario, password) {
 // Guardar asistencia en Google Sheets
 async function guardarAsistencia(datos) {
     try {
-        // Calcular horas
-        const calculo = calcularHoras(datos.horaEntrada, datos.horaSalida);
+        
         
         // Preparar fila
         const fila = [
@@ -146,22 +135,13 @@ async function guardarAsistencia(datos) {
             datos.dni,
             datos.nombre,
             datos.horaEntrada || '-',
-            datos.horaSalida || '-',
-            calculo ? calculo.totalHoras : '-',
-            calculo ? calculo.horasNormales : '0',
-            calculo ? calculo.horasExtra50 : '0',
-            calculo ? calculo.horasExtra100 : '0',
+            datos.horaSalida || '-',  
             datos.turno,
             datos.turnoIngeniero,
             datos.observaciones || '',
-            calculo ? calculo.veinticincoNocturno : '0',
-            calculo ? calculo.veinticinco5am7pm : '0',
-            calculo ? calculo.cincuenta7pm5am : '0',
-            calculo ? calculo.prolongacionNoct75 : '0',
-            calculo ? calculo.feriadosDomingos100 : '0'
         ];
 
-        console.log('Enviando fila:', fila);
+        
         
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',

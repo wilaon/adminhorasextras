@@ -14,9 +14,6 @@ const elementos = {
     submitBtn: document.getElementById('submitBtn'),
     dniValidation: document.getElementById('dniValidation'),
     hoursInfo: document.getElementById('hoursInfo'),
-    horasNormales: document.getElementById('horasNormales'),
-    horasExtra50: document.getElementById('horasExtra50'),
-    horasExtra100: document.getElementById('horasExtra100'),
     totalHoras: document.getElementById('totalHoras'),
     loading: document.getElementById('loading'),
     successMessage: document.getElementById('successMessage'),
@@ -34,35 +31,19 @@ function actualizarReloj() {
     elementos.clock.textContent = formatearFechaHora();
 }
 
-// Actualizar display de horas
-function actualizarCalculoHoras() {
-    const calculo = calcularHoras(elementos.horaEntrada.value, elementos.horaSalida.value);
-    
-    if (calculo) {
-        elementos.horasNormales.textContent = calculo.formatoNormales;
-        elementos.horasExtra50.textContent = calculo.formatoExtra50;
-        elementos.horasExtra100.textContent = calculo.formatoExtra100;
-        elementos.totalHoras.textContent = calculo.formatoTotal;
-        mostrarElemento(elementos.hoursInfo, true);
-    } else {
-        mostrarElemento(elementos.hoursInfo, false);
-    }
-}
-
-
 
 // Validar DNI
 function validarDNI(dni) {
     if (dni.length === 15) {
         const empleado = buscarEmpleado(dni);
-        console.log('empleado encontrado',empleado);
+       
         //busca nombre del empleado en minuscula o MAYUSCULA
         if (empleado && (empleado.nombre ||empleado.NOMBRE)) {
             elementos.nombre.value = empleado.nombre || empleado.NOMBRE || '';
             elementos.nombre.readOnly = true;
             elementos.dniValidation.textContent = 'Empleado encontrado';
             elementos.dniValidation.className = 'validation-message success show';
-            elementos.submitBtn.disabled = false;
+            //elementos.submitBtn.disabled = false;
         } else {
             elementos.nombre.value = '';
             elementos.nombre.readOnly = false;
@@ -148,13 +129,9 @@ function inicializarEventos() {
             elementos.dniValidation.classList.remove('show');
             elementos.nombre.value = '';
             elementos.nombre.readOnly = false;
-            elementos.submitBtn.disabled = true;
+           // elementos.submitBtn.disabled = true;
         }
-    });
-    
-    // Actualizar cálculo de horas
-    elementos.horaEntrada.addEventListener('change', actualizarCalculoHoras);
-    elementos.horaSalida.addEventListener('change', actualizarCalculoHoras);
+    });  
     
     // Submit form
     elementos.form.addEventListener('submit', procesarFormulario);
