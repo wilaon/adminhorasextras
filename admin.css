@@ -7,6 +7,11 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;                /* ocupa toda la altura del viewport */
+    overflow-y: hidden;          /* evita barra de desplazamiento vertical del navegador */
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
     background-color: #f3f4f6;
@@ -24,7 +29,11 @@ body {
     max-width: none;
     margin: 0 auto;
     padding: 15px;
-    min-height: 100vh;
+    /* -- Cambios para ajustar verticalmente -- */
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* ocupa exactamente la altura visible del navegador */
+    box-sizing: border-box;
 }
 
 /* ============================================
@@ -39,6 +48,7 @@ body {
     background: linear-gradient(135deg, #0080c0 0%, #0099d8 100%);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 153, 216, 0.15);
+    flex-shrink: 0; /* asegurar que no se colapse al usar flex */
 }
 
 .admin-header h1 {
@@ -86,6 +96,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #e5e7eb;
+    flex-shrink: 0; /* fija su tamaño dentro del contenedor */
 }
 
 .controls-left, 
@@ -142,6 +153,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #e5e7eb;
+    flex-shrink: 0; /* fija su tamaño dentro del contenedor */
 }
 
 .filter-group {
@@ -177,9 +189,9 @@ body {
    TABLA - OPTIMIZADA Y MINIMALISTA
    ============================================ */
 .table-container {
-    overflow-x: auto;
-    max-height: 450px; /* <--- Altura máxima (ajusta 400px a tu gusto) */
-    overflow-y: auto;  /* <--- Habilita la barra de desplazamiento vertical */
+    /* Eliminé max-height fijo y dejo que la tabla ocupe el espacio restante */
+    flex: 1;                /* ocupa el espacio disponible verticalmente */
+    overflow-y: auto;       /* solo la tabla tendrá scroll interno si hace falta */
     margin-bottom: 16px;
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -197,7 +209,6 @@ table {
     background-color: #ffffff;
     font-size: 10px;
 }
-
 
 /* Responsive para pantallas pequeñas: */
 @media (max-width: 1400px) {
@@ -475,6 +486,7 @@ table td:nth-child(15) {
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #e5e7eb;
+    flex-shrink: 0; /* fija su tamaño dentro del contenedor */
 }
 
 .pagination-info {
