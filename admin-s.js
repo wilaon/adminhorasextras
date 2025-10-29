@@ -260,13 +260,15 @@ function buscarEnTabla() {
             const fecha = String(registro.fecha ?? '');
             const turno = String(registro.turno ?? '').toLowerCase();
             const ingeniero = String(registro.turnoIngeniero ?? '').toLowerCase();
+            const estado = String(registro.estado ?? '').toLowerCase();
 
             return (
                 dni.includes(textoLimpio) ||
                 nombre.includes(texto) ||
                 fecha.includes(texto) ||
                 turno.includes(texto) ||
-                ingeniero.includes(texto)
+                ingeniero.includes(texto) ||
+                estado.includes(texto)
             );
         });
     }
