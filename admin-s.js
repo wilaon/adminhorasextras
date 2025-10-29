@@ -485,6 +485,7 @@ async function guardarEdicion() {
 
 
             console.log('✓ Registro actualizado correctamente');
+            await new Promise(resolve =>setTimeout(resolve,2000));
             
             // Cerrar modal
             cerrarModal('modalEditar');

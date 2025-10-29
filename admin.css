@@ -13,6 +13,7 @@ body {
     color: #1f2937;
     line-height: 1.5;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 /* ============================================
@@ -20,7 +21,7 @@ body {
    ============================================ */
 .admin-container {
     width: 100%;
-    max-width: 1800px;
+    max-width: none;
     margin: 0 auto;
     padding: 20px;
     min-height: 100vh;
@@ -184,14 +185,48 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     background: #ffffff;
     border: 1px solid #e5e7eb;
+    width: 100%;
+    max-width: 100%;
 }
 
 table {
     width: 100%;
+    min-width: 1200px;
     border-collapse: separate;
     border-spacing: 0;
     background-color: #ffffff;
     font-size: 10px;
+}
+
+
+/* Responsive para pantallas pequeñas: */
+@media (max-width: 1400px) {
+    .admin-container {
+        padding: 15px;
+    }
+    
+    table {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 10px;
+    }
+    
+    table {
+        font-size: 11px;
+    }
+    
+    table th, table td {
+        padding: 6px 4px;
+    }
+    
+    .btn {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
 }
 
 table th {
