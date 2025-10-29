@@ -515,7 +515,7 @@ function eliminarRegistro(indice) {
 
 // Confirmar eliminación
 async function confirmarEliminar() {
-    /*
+    
     if (indiceAEliminar === null) return;
     
     const registro = registrosFiltrados[indiceAEliminar];
@@ -526,60 +526,41 @@ async function confirmarEliminar() {
     document.getElementById('loadingOverlay').style.display = 'flex';
     
     try {
-        await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'eliminarAsistencia',
-                indiceFila: registro.filaSheet  // ← USAR filaSheet
-            })
-        });
-        
-        alert('✓ Registro eliminado correctamente');
-        cerrarModal('modalEliminar');
-        
-        // Recargar datos
-        await cargarDatos();
-        
-    } catch (error) {
-        console.error('Error:', error);
-        alert('✗ Error al eliminar el registro');
-    } finally {
-        document.getElementById('loadingOverlay').style.display = 'none';
-        indiceAEliminar = null;
-    }
-        */
-
-    const filaAEliminar = registrosFiltrados[indiceEliminar].filaSheet;
-    
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    
-    try {
-        // ✅ CAMBIO: Usar GET
+        // ============================================
+        // CAMBIO: USAR GET EN LUGAR DE POST
+        // ============================================
         const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=eliminarAsistencia&indiceFila=${filaAEliminar}`;
         
         const response = await fetch(url);
         const resultado = await response.json();
         
+        console.log('Respuesta del servidor:', resultado);
+        
         if (resultado.success) {
-            console.log('✓ Registro eliminado');
+            console.log('✓ Registro eliminado correctamente');
+            
+            // Cerrar modal
             cerrarModal('modalEliminar');
+            
+            // Limpiar variable
+            indiceAEliminar = null;
+            
+            // Recargar datos
             await cargarDatos();
+            
         } else {
-            console.error('Error:', resultado.error);
+            console.error('Error del servidor:', resultado.error);
             alert('✗ Error al eliminar: ' + resultado.error);
-            // Modal queda abierto para reintentar
         }
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Error:', error);
         alert('✗ Error de conexión: ' + error.message);
     } finally {
+        // Ocultar loading
         document.getElementById('loadingOverlay').style.display = 'none';
     }
+    
 
 
 }
