@@ -463,42 +463,9 @@ async function guardarEdicion() {
     
     // Mostrar loading
     document.getElementById('loadingOverlay').style.display = 'flex';
-    /*
-    try {
-        
-
-        // USAR filaSheet (número de fila real en Google Sheets)
-        await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'actualizarAsistencia',
-                indiceFila: registro.filaSheet,  // ← CAMBIO CLAVE AQUÍ
-                datos: datosActualizados
-            })
-        });
-
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        alert('✓ Registro actualizado correctamente');
-        cerrarModal('modalEditar');
-        
-        // Recargar datos
-        await cargarDatos();
-        
-    } catch (error) {
-        console.error('Error:', error);
-        alert('✗ Error al actualizar el registro');
-    } finally {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }*/
-
 
     try {
-        
+
         // USANDO GET
         
         const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=actualizarAsistencia&indiceFila=${registro.filaSheet}&datos=${encodeURIComponent(JSON.stringify(datosActualizados))}`;
@@ -548,6 +515,7 @@ function eliminarRegistro(indice) {
 
 // Confirmar eliminación
 async function confirmarEliminar() {
+    /*
     if (indiceAEliminar === null) return;
     
     const registro = registrosFiltrados[indiceAEliminar];
@@ -583,6 +551,37 @@ async function confirmarEliminar() {
         document.getElementById('loadingOverlay').style.display = 'none';
         indiceAEliminar = null;
     }
+        */
+
+    const filaAEliminar = registrosFiltrados[indiceEliminar].filaSheet;
+    
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    try {
+        // ✅ CAMBIO: Usar GET
+        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=eliminarAsistencia&indiceFila=${filaAEliminar}`;
+        
+        const response = await fetch(url);
+        const resultado = await response.json();
+        
+        if (resultado.success) {
+            console.log('✓ Registro eliminado');
+            cerrarModal('modalEliminar');
+            await cargarDatos();
+        } else {
+            console.error('Error:', resultado.error);
+            alert('✗ Error al eliminar: ' + resultado.error);
+            // Modal queda abierto para reintentar
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('✗ Error de conexión: ' + error.message);
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+
 }
 
 
