@@ -17,8 +17,6 @@ function formatearTiempo(minutos) {
     return `${h}h ${m}m`;
 }
 
-//-------------- Calcular horas trabajadas
-
 
 // Mostrar/ocultar elemento
 function mostrarElemento(elemento, mostrar = true) {

@@ -415,7 +415,7 @@ async function guardarNuevoRegistro() {
     }
 }
 
-// Funciones para editar registro
+// editar registro
 async function editarRegistro(indice) {
     const registro = registrosFiltrados[indice];
     
@@ -443,6 +443,7 @@ async function editarRegistro(indice) {
     }
 }
 
+
 // Guardar edición
 async function guardarEdicion() {
     const indice = parseInt(document.getElementById('editIndex').value);
@@ -462,9 +463,10 @@ async function guardarEdicion() {
     
     // Mostrar loading
     document.getElementById('loadingOverlay').style.display = 'flex';
-    
+    /*
     try {
         
+
         // USAR filaSheet (número de fila real en Google Sheets)
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',
@@ -479,7 +481,7 @@ async function guardarEdicion() {
             })
         });
 
-
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         alert('✓ Registro actualizado correctamente');
         cerrarModal('modalEditar');
@@ -492,7 +494,48 @@ async function guardarEdicion() {
         alert('✗ Error al actualizar el registro');
     } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
+    }*/
+
+
+    try {
+        
+        // USANDO GET
+        
+        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=actualizarAsistencia&indiceFila=${registro.filaSheet}&datos=${encodeURIComponent(JSON.stringify(datosActualizados))}`;
+        
+        console.log('Actualizando registro...');
+        
+        // Hacer la petición GET
+        const response = await fetch(url);
+        
+        // Leer la respuesta
+        const resultado = await response.json();
+        
+        console.log('Respuesta:', resultado);
+        
+        // Verificar si fue exitoso
+        if (resultado.success) {
+            console.log('✓ Registro actualizado correctamente');
+            
+            // Cerrar modal
+            cerrarModal('modalEditar');
+            
+            // Recargar datos
+            await cargarDatos();
+            
+        } else {
+            console.error('Error del servidor:', resultado.error);
+            alert('✗ Error: ' + resultado.error);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error:', error);
+        alert('✗ Error al actualizar: ' + error.message);
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
     }
+    
+
 }
 
 
