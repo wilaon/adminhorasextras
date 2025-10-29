@@ -482,13 +482,18 @@ async function guardarEdicion() {
         
         // Verificar si fue exitoso
         if (resultado.success) {
-            console.log('✓ Registro actualizado correctamente');
+
+
+            document.getElementById('successMessage').textContent = '✓ Registro Actualizado correctamente';
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
             
-            // Cerrar modal
-            cerrarModal('modalEditar');
-            
-            // Recargar datos
-            await cargarDatos();
+            // Esperar 1 segundos, cerrar modal y recargar
+            setTimeout(() => {
+                cerrarModal('modalEditar');
+                cargarDatos();
+            }, 1000);
+
             
         } else {
             console.error('Error del servidor:', resultado.error);
@@ -520,15 +525,13 @@ async function confirmarEliminar() {
     
     const registro = registrosFiltrados[indiceAEliminar];
     
-    console.log('Eliminando registro:', registro);
+    console.log('Eliminando registro:');
     
     // Mostrar loading
     document.getElementById('loadingOverlay').style.display = 'flex';
     
     try {
-        // ============================================
-        // CAMBIO: USAR GET EN LUGAR DE POST
-        // ============================================
+        
         const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=eliminarAsistencia&indiceFila=${registro.filaSheet}`;
         
         const response = await fetch(url);
