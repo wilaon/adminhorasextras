@@ -140,7 +140,7 @@ function mostrarDatos() {
     const registrosPagina = registrosMostrar.slice(inicio, fin);
     
     if (registrosPagina.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No hay registros</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="16" style="text-align: center;">No hay registros</td></tr>';
         // Actualizar contadores en 0
         document.getElementById('showingFrom').textContent = '0';
         document.getElementById('showingTo').textContent = '0';
@@ -149,29 +149,44 @@ function mostrarDatos() {
     }
 
 
-registrosPagina.forEach((registro) => {
-        const indiceReal = registrosFiltrados.indexOf(registro);
+    registrosPagina.forEach((registro) => {
+    const indiceReal = registrosFiltrados.indexOf(registro);
         
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${registro.fecha || '-'}</td>
-            <td>${registro.dni || '-'}</td>
-            <td>${registro.nombre || '-'}</td>
-            <td>${registro.turno || '-'}</td>
-            <td>${registro.horaEntrada || '-'}</td>
-            <td>${registro.horaSalida || '-'}</td>
-            <td>${registro.totalHoras || '-'}</td>
-            <td>${registro.turnoIngeniero || '-'}</td>
-            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${registro.observaciones}">${registro.observaciones || '-'}</td>
-            <td>${registro.veinticincoNocturno || '0'}</td>
-            <td>${registro.veinticinco5am7pm || '0'}</td>
-            <td>${registro.cincuenta7pm5am || '0'}</td>
-            <td>${registro.prolongacionNoct75 || '0'}</td>
-            <td>${registro.feriadosDomingos100 || '0'}</td>
-            <td>
-                <button class="btn-edit" onclick="editarRegistro(${indiceReal})" title="Editar">✏️</button>
-                <button class="btn-delete" onclick="eliminarRegistro(${indiceReal})" title="Eliminar">🗑️</button>
-            </td>
+    const tr = document.createElement('tr');
+
+    const estado = registro.estado || 'Pendiente';
+    if (estado === 'Aprobado') {
+        tr.style.backgroundColor = '#d4edda'; // Verde claro
+    } else if (estado === 'Rechazado') {
+        tr.style.backgroundColor = '#f8d7da'; // Rojo claro
+    }
+
+
+    tr.innerHTML = `
+        <td>${registro.fecha || '-'}</td>
+        <td>${registro.dni || '-'}</td>
+        <td>${registro.nombre || '-'}</td>
+        <td>${registro.turno || '-'}</td>
+        <td>${registro.horaEntrada || '-'}</td>
+        <td>${registro.horaSalida || '-'}</td>
+        <td>${registro.totalHoras || '-'}</td>
+        <td>${registro.turnoIngeniero || '-'}</td>
+        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${registro.observaciones}">${registro.observaciones || '-'}</td>
+        <td>${registro.veinticincoNocturno || '0'}</td>
+        <td>${registro.veinticinco5am7pm || '0'}</td>
+        <td>${registro.cincuenta7pm5am || '0'}</td>
+        <td>${registro.prolongacionNoct75 || '0'}</td>
+        <td>${registro.feriadosDomingos100 || '0'}</td>
+        <td>
+            <button class="btn-edit" onclick="editarRegistro(${indiceReal})" title="Editar">✏️</button>
+            <button class="btn-delete" onclick="eliminarRegistro(${indiceReal})" title="Eliminar">🗑️</button>
+            ${estado === 'Pendiente' ? `
+                    <button class="btn-approve" onclick="aprobarRegistro(${indiceReal})" title="Aprobar">✓</button>
+                    <button class="btn-reject" onclick="rechazarRegistro(${indiceReal})" title="Rechazar">✗</button>
+                ` : `
+                    <span class="badge badge-${estado === 'Aprobado' ? 'success' : 'danger'}">${estado}</span>
+                `}
+        </td>
         `;
         
         tbody.appendChild(tr);
@@ -186,6 +201,50 @@ registrosPagina.forEach((registro) => {
     // Actualizar botones de paginación
     actualizarPaginacion();
 }
+
+
+
+
+async function aprobarRegistro(indice) {
+    const registro = registrosFiltrados[indice];
+    await cambiarEstadoRegistro(registro.filaSheet, 'Aprobado');
+}
+
+
+async function rechazarRegistro(indice) {
+    if (!confirm('¿Está seguro de rechazar esta solicitud?')) return;
+    const registro = registrosFiltrados[indice];
+    await cambiarEstadoRegistro(registro.filaSheet, 'Rechazado');
+}
+
+
+async function cambiarEstadoRegistro(filaSheet, nuevoEstado) {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    try {
+        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=cambiarEstado&indiceFila=${filaSheet}&estado=${nuevoEstado}`;
+        
+        const response = await fetch(url);
+        const resultado = await response.json();
+        
+        if (resultado.success) {
+            console.log(`✓ Estado cambiado a: ${nuevoEstado}`);
+            await cargarDatos();
+        } else {
+            alert('✗ Error: ' + resultado.error);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('✗ Error al cambiar estado');
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+}
+
+
+
+
 
 // Buscar en tabla
 function buscarEnTabla() {
@@ -486,7 +545,7 @@ async function guardarEdicion() {
 
             console.log('✓ Registro actualizado correctamente');
             await new Promise(resolve =>setTimeout(resolve,2000));
-            
+
             // Cerrar modal
             cerrarModal('modalEditar');
             
