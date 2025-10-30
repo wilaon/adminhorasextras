@@ -82,6 +82,31 @@ window.onload = function() {
     cargarDatos();
 };
 
+
+function ordenarRegistroEstado(registros){
+    return registros.sort((a,b)=> {
+        const estadoA = (a.estado || 'Pendiente').toLowerCase();
+        const estadoB = (a.estado || 'Pendiente').toLowerCase();
+        const prioridad = {
+            'pendiente':0,
+            '':0,
+            'aprobado':1,
+            'rechazado':2
+        };
+        const prioridadA = prioridad[estadoA] ?? 0;
+        const prioridadB = prioridad[estadoB] ?? 0;
+        if (prioridadA != prioridadB) {
+            return prioridadA -prioridadB;
+        }
+
+        const fechaA = a.fecha || '';
+        const fechaB = b.fecha || '';
+
+        return fechaB.localeCompare(fechaA)
+    });
+
+}
+
 // Función para cargar datos desde Google Sheets
 async function cargarDatos() {
     console.log('Cargando datos...');
@@ -97,7 +122,7 @@ async function cargarDatos() {
         
         
         if (data.success && data.registros) {
-            todosLosRegistros = data.registros;
+            todosLosRegistros = ordenarRegistroEstado( data.registros);
             registrosFiltrados = [...todosLosRegistros];
             
             console.log(`Se cargaron ${todosLosRegistros.length} registros`);
