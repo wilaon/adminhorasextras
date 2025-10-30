@@ -16,7 +16,6 @@
         <button class="btn btn-primary" style="margin-bottom: 20px;" id="ingresarBtn" onclick="abrirModal('nuevoRegistroModal')">
         Ingresar Solicitud
         </button>
-      </div>
 
       <!-- Filtros adicionales -->
       <div class="filters-section">
@@ -49,6 +48,17 @@
             onkeyup="buscarEnTabla()"
           />
         </div>
+
+        <div class="filter-group" style="margin-left: auto; border-left: 2px solid #ddd; padding-left: 15px;">
+            <label>Mes de Reporte:</label>
+            <input type="month" id="mesReporte" value="2025-10" />
+            <button class="btn btn-primary" onclick="generarReporteMensual()">
+                📊 Generar Reporte
+            </button>
+        </div>
+
+</div>
+
       </div>
 
       <!-- Tabla -->

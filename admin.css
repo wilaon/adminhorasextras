@@ -930,49 +930,4 @@ table td:nth-child(15) {
         width: 100%;
     }
 }
-
-
-
-
-/* Colores de estado */
-tr[style*="background-color: rgb(212, 237, 218)"] {
-    background-color: #d4edda !important;
-}
-
-tr[style*="background-color: rgb(248, 215, 218)"] {
-    background-color: #f8d7da !important;
-}
-
-/* Badges de estado */
-.badge {
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.badge-success {
-    background-color: #28a745;
-    color: white;
-}
-
-.badge-danger {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* Botones de aprobación */
-.btn-success {
-    background-color: #28a745;
-    color: white;
-    padding: 4px 8px;
-    margin-right: 3px;
-}
-
-.btn-success:hover {
-    background-color: #218838;
-}
-
-
-
 }
