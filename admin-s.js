@@ -85,6 +85,21 @@ window.onload = function() {
 
 function ordenarRegistroEstado(registros){
     return registros.sort((a,b)=> {
+
+        const fechaA = a.fecha || '';
+        const fechaB = b.fecha || '';
+
+        if (fechaA != fechaB) {
+            return fechaB.localeCompare(fechaA)
+        }
+
+        const nombreA = (a.nombre || '').toLowerCase();
+        const nombreB = (b.nombre || '').toLowerCase();
+        if (nombreA != nombreB) {
+          return nombreA.localeCompare(nombreB)  
+        }
+        
+        
         const estadoA = (a.estado || 'Pendiente').toLowerCase();
         const estadoB = (a.estado || 'Pendiente').toLowerCase();
         const prioridad = {
@@ -93,16 +108,14 @@ function ordenarRegistroEstado(registros){
             'aprobado':1,
             'rechazado':2
         };
+
         const prioridadA = prioridad[estadoA] ?? 0;
         const prioridadB = prioridad[estadoB] ?? 0;
         if (prioridadA != prioridadB) {
             return prioridadA -prioridadB;
         }
 
-        const fechaA = a.fecha || '';
-        const fechaB = b.fecha || '';
-
-        return fechaB.localeCompare(fechaA)
+        
     });
 
 }
@@ -296,6 +309,7 @@ function buscarEnTabla() {
                 estado.includes(texto)
             );
         });
+        registrosFiltrados = ordenarRegistroEstado(registrosFiltrados)
     }
     
     paginaActual = 1;
