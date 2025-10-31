@@ -736,7 +736,7 @@ async function generarReporteMensual() {
     const mesReporte = document.getElementById('mesReporte').value;
     
     if (!mesReporte) {
-        alert('⚠️ Selecciona un mes para el reporte');
+        alert('Selecciona un mes para el reporte');
         return;
     }
     
