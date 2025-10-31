@@ -1,7 +1,7 @@
 // Configuración global del sistema
 const CONFIG = {
     // URL del Google Apps Script
-    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyifgZdSU4e3EJvPMx5xu7juW4gXya3Rl7wEIP2aT7t3LRtEW0ed2ItSiLWxKiGAdtCQw/exec',
+    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyE7rIvtNpnUKYJScuHlMwmeRZyR1xJC9bujgkG7khLoz1gtE1m5zb-fn3OO7l6ePycxA/exec',
     
     // Configuración de validación
     DNI_LENGTH: 15,

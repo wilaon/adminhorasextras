@@ -727,3 +727,52 @@ function exportarExcel() {
     
     console.log(`✓ Exportados ${registrosExportar.length} registros a CSV`);
 }
+
+
+
+// GENERAR REPORTE MENSUAL
+// ============================================
+async function generarReporteMensual() {
+    const mesReporte = document.getElementById('mesReporte').value;
+    
+    if (!mesReporte) {
+        alert('⚠️ Selecciona un mes para el reporte');
+        return;
+    }
+    
+    console.log('Generando reporte para:', mesReporte);
+    
+    // Mostrar loading
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    try {
+        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=generarReporteMensual&mes=${mesReporte}`;
+        
+        console.log('Llamando a:', url);
+        
+        const response = await fetch(url);
+        const resultado = await response.json();
+        
+        console.log('Respuesta:', resultado);
+        
+        if (resultado.success) {
+            console.log(`✓ Reporte generado con ${resultado.empleados} empleados`);
+            
+            // Abrir el archivo en nueva pestaña
+            window.open(resultado.url, '_blank');
+            
+            alert(`✓ Reporte generado exitosamente\n\n` +
+                  `Empleados: ${resultado.empleados}\n` +
+                  `Archivo: ${resultado.nombreArchivo}\n\n` +
+                  `Se abrirá en una nueva pestaña donde puedes descargarlo como Excel.`);
+        } else {
+            alert('✗ Error: ' + resultado.error);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('✗ Error al generar reporte: ' + error.message);
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+}
