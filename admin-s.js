@@ -529,6 +529,12 @@ async function editarRegistro(indice) {
     document.getElementById('editHoraEntrada').value = registro.horaEntrada || '';
     document.getElementById('editHoraSalida').value = registro.horaSalida || '';
     document.getElementById('editObservaciones').value = registro.observaciones || '';
+
+    // Abrir modal
+    const modalEditar = document.getElementById('modalEditar');
+    if (modalEditar) {
+        modalEditar.style.display = 'block';
+    }
     
     /// CARGAR TURNOS E INGENIEROS DINÁMICAMENTE
     await llenarSelectTurnos(document.getElementById('editTurno'));
@@ -536,11 +542,7 @@ async function editarRegistro(indice) {
     
     await llenarSelectIngenieros(document.getElementById('editTurnoIngeniero'));
     document.getElementById('editTurnoIngeniero').value = registro.turnoIngeniero || '';
-    // Abrir modal después de cargar todo
-    const modalEditar = document.getElementById('modalEditar');
-    if (modalEditar) {
-        modalEditar.style.display = 'block';
-    }
+    
 }
 
 
@@ -758,8 +760,11 @@ async function generarReporteMensual() {
         if (resultado.success) {
             console.log(`✓ Reporte generado con ${resultado.empleados} empleados`);
             
-            // Abrir el archivo en nueva pestaña
-            window.open(resultado.url, '_blank');
+            const fileId = resultado.url.match(/\/d\/(.+?)\//)[1];
+            const downloadUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
+            
+            
+            window.open(downloadUrl, '_blank');
             
             alert(`✓ Reporte generado exitosamente\n\n` +
                   `Empleados: ${resultado.empleados}\n` +
