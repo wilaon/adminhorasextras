@@ -529,6 +529,7 @@ async function editarRegistro(indice) {
     document.getElementById('editHoraEntrada').value = registro.horaEntrada || '';
     document.getElementById('editHoraSalida').value = registro.horaSalida || '';
     document.getElementById('editObservaciones').value = registro.observaciones || '';
+    document.getElementById('EditEstado').value = registro.estado || 'Pendiente';
 
     // Abrir modal
     const modalEditar = document.getElementById('modalEditar');
@@ -560,7 +561,8 @@ async function guardarEdicion() {
         horaSalida: document.getElementById('editHoraSalida').value,
         turno: document.getElementById('editTurno').value,
         turnoIngeniero: document.getElementById('editTurnoIngeniero').value,
-        observaciones: document.getElementById('editObservaciones').value
+        observaciones: document.getElementById('editObservaciones').value,
+        estado: document.getElementById('editEstado').value
     };
     
     // Mostrar loading
