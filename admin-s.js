@@ -6,7 +6,7 @@ let registrosFiltrados = [];
 let paginaActual = 1;
 let registrosPorPagina = 25;
 let sesionActual = null;
-
+let usuarioLogueado= null;
 
 
 // Verificar sesión al cargar
@@ -31,6 +31,123 @@ function verificarSesion() {
     
     return sesion;
 }
+
+
+function obtenerUsuarioLogueado() {
+    const sesionStr = localStorage.getItem('sesion');
+    
+    if (!sesionStr) {
+        alert(' No hay sesión activa');
+        window.location.href = 'login.html';
+        return null;
+    }
+    
+    try {
+        usuarioLogueado = JSON.parse(sesionStr);
+        console.log(' Usuario logueado:', usuarioLogueado.user);
+        console.log(' DNI:', usuarioLogueado.dni);
+        console.log(' Rol:', usuarioLogueado.rol);
+        return usuarioLogueado;
+    } catch (error) {
+        console.error('Error al leer sesión:', error);
+        localStorage.removeItem('sesion');
+        window.location.href = 'login.html';
+        return null;
+    }
+}
+
+
+
+async function obtenerSedeUsuario(dni) {
+    try {
+        console.log('Consultando sede para DNI:', dni);
+        
+        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getSedeUsuario&dni=${encodeURIComponent(dni)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(' Sede:', data.sedeNombre, '(ID:', data.sedeId + ')');
+            console.log(' Es Admin:', data.esAdmin);
+            return data;
+        } else {
+            console.error('Error:', data.error);
+            alert('❌ ' + data.error);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error al obtener sede:', error);
+        return null;
+    }
+}
+
+
+
+async function cargarSedes() {
+    try {
+        
+        // Obtener usuario logueado
+        const usuario = obtenerUsuarioLogueado();
+        if (!usuario) return;
+        
+        // Obtener información de sede del usuario
+        const infoSede = await obtenerSedeUsuario(usuario.dni);
+        if (!infoSede) {
+            alert(' No se pudo obtener información de sede');
+            return;
+        }
+        
+        const selectSede = document.getElementById('sedeReporte');
+        selectSede.innerHTML = '';
+        
+        // Si es ADMIN → Cargar todas las sedes
+        if (infoSede.esAdmin) {
+            console.log(' Usuario es ADMIN - Acceso a todas las sedes');
+            
+            const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getSedes`);
+            const data = await response.json();
+            
+            if (data.success && data.sedes) {
+                // Opción para todas las sedes
+                selectSede.innerHTML = '<option value="">Seleccionar Sede </option>';
+                
+                // Agregar cada sede
+                data.sedes.forEach(sede => {
+                    const option = document.createElement('option');
+                    option.value = sede.id;
+                    option.textContent = sede.nombre;
+                    selectSede.appendChild(option);
+                });
+                
+                console.log(' Sedes cargadas:', data.sedes.length);
+                console.log(' Select habilitado - Puede cambiar sede');
+            }
+        } 
+        
+        else {
+            console.log(' Usuario normal - Solo su sede');
+            
+            const option = document.createElement('option');
+            option.value = infoSede.sedeId;
+            option.textContent = infoSede.sedeNombre;
+            option.selected = true;
+            selectSede.appendChild(option);
+            
+            
+            selectSede.disabled = true;
+            selectSede.style.backgroundColor = '#f0f0f0';
+            selectSede.style.cursor = 'not-allowed';
+            
+            console.log(' Sede cargada:', infoSede.sedeNombre);
+            console.log(' Select bloqueado - No puede cambiar sede');
+        }
+        
+    } catch (error) {
+        console.error('Error al cargar sedes:', error);
+        alert(' Error al cargar sedes');
+    }
+}
+
+
 
 // Cerrar sesión
 function cerrarSesion() {
@@ -77,8 +194,9 @@ window.onload = function() {
     
     document.getElementById('fechaDesde').value = hace30Dias.toISOString().split('T')[0];
     document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
-    
-    // Cargar datos
+
+
+    cargarSedes();
     cargarDatos();
 };
 
@@ -738,12 +856,19 @@ function exportarExcel() {
 // ============================================
 async function generarReporteMensual() {
     const mesReporte = document.getElementById('mesReporte').value;
-    
+    const sedeId = document.getElementById('sedeReporte').value;
+
     if (!mesReporte) {
         alert('Selecciona un mes para el reporte');
         return;
     }
-    
+    if (!sedeId) {
+        const usuario = obtenerUsuarioLogueado();
+        if (usuario && usuario.rol !== 'admin') {
+            alert('Seleccione la SEDE');
+            return;
+        }
+    }
     console.log('Generando reporte para:', mesReporte);
     
     // Mostrar loading

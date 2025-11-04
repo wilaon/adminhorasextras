@@ -52,6 +52,10 @@
         <div class="filter-group" style="margin-left: auto; border-left: 2px solid #ddd; padding-left: 15px;">
             <label>Mes de Reporte:</label>
             <input type="month" id="mesReporte" value="2025-10" />
+            <label >Sede:</label>
+            <select id="sedeReporte" required style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                <option value="">Cargando sedes...</option>
+            </select>
             <button class="btn btn-primary" onclick="generarReporteMensual()">
                 📊 Generar Reporte
             </button>
@@ -84,7 +88,7 @@
               <th onclick="ordenarTabla('salida')">
                 Salida <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('horas')">ese e
+              <th onclick="ordenarTabla('horas')">
                 Total(H) <span class="sort-icon"></span>
               </th>
               <th onclick="ordenarTabla('turnoIngeniero')">

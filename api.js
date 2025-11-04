@@ -127,7 +127,6 @@ async function validarLoginServidor(usuario, password) {
 async function guardarAsistencia(datos) {
     try {
         
-        
         // Preparar fila
         const fila = [
             new Date().toISOString(),

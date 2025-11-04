@@ -218,17 +218,9 @@
     </div>
 
     <script src="config.js"></script>
-    <script>
-        // ============================================
-        // VARIABLES GLOBALES
-        // ============================================
-        
+    <script>  
         let usuariosCargados = {};
-        
-        // ============================================
-        // CARGAR USUARIOS DINÁMICAMENTE
-        // ============================================
-        
+              
         async function cargarUsuarios() {
             try {
                 const selectUsuario = document.getElementById('usuario');
@@ -269,10 +261,6 @@
             }
         }
         
-        // ============================================
-        // VALIDAR LOGIN CON PASSWORD DE SHEET
-        // ============================================
-        
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -285,13 +273,13 @@
             
             // Validaciones básicas
             if (!usuario) {
-                errorMessage.textContent = '⚠️ Seleccione un usuario';
+                errorMessage.textContent = ' Seleccione un usuario';
                 errorMessage.classList.add('show');
                 return;
             }
             
             if (!password) {
-                errorMessage.textContent = '⚠️ Ingrese su contraseña';
+                errorMessage.textContent = ' Ingrese su contraseña';
                 errorMessage.classList.add('show');
                 return;
             }
@@ -316,7 +304,7 @@
                     }
                     
                     if (!usuarioEncontrado) {
-                        errorMessage.textContent = '❌ Usuario no encontrado';
+                        errorMessage.textContent = ' Usuario no encontrado';
                         errorMessage.classList.add('show');
                         form.style.display = 'block';
                         loading.style.display = 'none';
@@ -345,7 +333,7 @@
                         window.location.href = 'index.html';
                     } else {
                         // Password incorrecto
-                        errorMessage.textContent = '❌ Contraseña incorrecta';
+                        errorMessage.textContent = ' Contraseña incorrecta';
                         errorMessage.classList.add('show');
                         form.style.display = 'block';
                         loading.style.display = 'none';
@@ -355,7 +343,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                errorMessage.textContent = '❌ Error de conexión';
+                errorMessage.textContent = ' Error de conexión';
                 errorMessage.classList.add('show');
                 form.style.display = 'block';
                 loading.style.display = 'none';
