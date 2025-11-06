@@ -707,18 +707,14 @@ async function guardarEdicion() {
 
 
             console.log('✓ Registro actualizado correctamente');
-
-            Object.assign(registrosFiltrados[indice], datosActualizados);
-            mostrarDatos();
             await new Promise(resolve =>setTimeout(resolve,1000));
 
             // Cerrar modal
             cerrarModal('modalEditar');
             
             // Recargar datos
-            //await cargarDatos();
+            await cargarDatos();
 
-            setTimeout(() => cargarDatos(), 1000);
             
         } else {
             console.error('Error del servidor:', resultado.error);
