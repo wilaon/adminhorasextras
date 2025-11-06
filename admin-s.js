@@ -707,13 +707,15 @@ async function guardarEdicion() {
 
 
             console.log('✓ Registro actualizado correctamente');
-            await new Promise(resolve =>setTimeout(resolve,2000));
+            await new Promise(resolve =>setTimeout(resolve,1000));
 
             // Cerrar modal
             cerrarModal('modalEditar');
             
             // Recargar datos
             await cargarDatos();
+
+            mostrarDatos();
             
         } else {
             console.error('Error del servidor:', resultado.error);
