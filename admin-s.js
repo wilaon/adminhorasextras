@@ -108,7 +108,7 @@ async function cargarSedes() {
             
             if (data.success && data.sedes) {
                 // Opción para todas las sedes
-                selectSede.innerHTML = '<option value="">Seleccionar Sede </option>';
+                selectSede.innerHTML = '<option value=""> Seleccionar </option>';
                 
                 // Agregar cada sede
                 data.sedes.forEach(sede => {
