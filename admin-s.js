@@ -4,9 +4,10 @@
 let todosLosRegistros = [];
 let registrosFiltrados = [];
 let paginaActual = 1;
-let registrosPorPagina = 25;
+let registrosPorPagina = 20;
 let sesionActual = null;
 let usuarioLogueado= null;
+let tablaDataTable = null;
 
 
 // Verificar sesión al cargar
@@ -66,7 +67,6 @@ async function obtenerSedeUsuario(dni) {
         const data = await response.json();
         
         if (data.success) {
-            console.log(' Sede:', data.sedeNombre, '(ID:', data.sedeId + ')');
             console.log(' Es Admin:', data.esAdmin);
             return data;
         } else {
@@ -165,7 +165,7 @@ function mostrarInfoUsuario(sesion) {
     infoUsuario.style.cssText = 'display: flex; align-items: center; gap: 15px;';
     infoUsuario.innerHTML = `
         <span style="color: white; font-size: 14px; font-weight: 500;">
-            👤 ${sesion.nombre} 
+             ${sesion.nombre} 
             <span style="opacity: 0.9;">(${sesion.rol === 'admin' ? 'Administrador' : 'Ingeniero'})</span>
         </span>
         <button onclick="cerrarSesion()" class="btn btn-secondary" style="padding: 8px 16px;">
@@ -189,6 +189,9 @@ window.onload = function() {
     
     // Establecer fechas por defecto
     const hoy = new Date();
+
+    const mesActual = hoy.toISOString().slice(0, 7); // Formato: YYYY-MM
+    document.getElementById('mesReporte').value = mesActual;
     const hace30Dias = new Date();
     hace30Dias.setDate(hoy.getDate() - 30);
     
@@ -210,14 +213,11 @@ function ordenarRegistroEstado(registros){
         if (fechaA != fechaB) {
             return fechaB.localeCompare(fechaA)
         }
-
         const nombreA = (a.nombre || '').toLowerCase();
         const nombreB = (b.nombre || '').toLowerCase();
         if (nombreA != nombreB) {
           return nombreA.localeCompare(nombreB)  
         }
-        
-        
         const estadoA = (a.estado || 'Pendiente').toLowerCase();
         const estadoB = (a.estado || 'Pendiente').toLowerCase();
         const prioridad = {
@@ -226,13 +226,11 @@ function ordenarRegistroEstado(registros){
             'aprobado':1,
             'rechazado':2
         };
-
         const prioridadA = prioridad[estadoA] ?? 0;
         const prioridadB = prioridad[estadoB] ?? 0;
         if (prioridadA != prioridadB) {
             return prioridadA -prioridadB;
         }
-
         
     });
 
@@ -247,18 +245,14 @@ async function cargarDatos() {
         document.getElementById('loadingOverlay').style.display = 'flex';
         
         const url = CONFIG.GOOGLE_SCRIPT_URL + '?action=obtenerAsistencias';
-        
         const response = await fetch(url);
         const data = await response.json();
-        
         
         if (data.success && data.registros) {
             todosLosRegistros = ordenarRegistroEstado( data.registros);
             registrosFiltrados = [...todosLosRegistros];
             
-            console.log(`Se cargaron ${todosLosRegistros.length} registros`);
-            
-            // Mostrar en tabla
+            console.log(`Se cargaron ${todosLosRegistros.length} registros`); 
             mostrarDatos();
         } else {
             alert('No se pudieron cargar los datos');
@@ -275,90 +269,115 @@ async function cargarDatos() {
 
 // Función para mostrar datos en la tabla
 function mostrarDatos() {
+
+    if (tablaDataTable) {
+        tablaDataTable.destroy();
+    }
     const tbody = document.getElementById('tablaBody');
     tbody.innerHTML = '';
-
-    // Filtrar por ingeniero si no es admin
-    let registrosMostrar = [...registrosFiltrados];
-    if (sesionActual && sesionActual.rol !== 'admin') {
-        registrosMostrar = registrosFiltrados.filter(r => {
-            const turnoIng = (r.turnoIngeniero || '').replace(/^Ing\.\s*/i, '').trim();
-            const sesionUser = (sesionActual.user || '').replace(/^Ing\.\s*/i, '').trim();
-            
-            return turnoIng.toLowerCase() === sesionUser.toLowerCase();
-    });
-    console.log(`Ingeniero ${sesionActual.user} - Registros filtrados:`, registrosMostrar.length);
-    }
-    
-    // Calcular qué registros mostrar según la página
-    const inicio = (paginaActual - 1) * registrosPorPagina;
-    const fin = inicio + registrosPorPagina;
-    const registrosPagina = registrosMostrar.slice(inicio, fin);
-    
-    if (registrosPagina.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="16" style="text-align: center;">No hay registros</td></tr>';
-        // Actualizar contadores en 0
-        document.getElementById('showingFrom').textContent = '0';
-        document.getElementById('showingTo').textContent = '0';
-        document.getElementById('totalRecords').textContent = '0';
+    if (registrosFiltrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="15" style="text-align: center;">No hay registros</td></tr>';
         return;
     }
-
-
-    registrosPagina.forEach((registro) => {
-    const indiceReal = registrosFiltrados.indexOf(registro);
+    
+    // Crear filas
+    registrosFiltrados.forEach((registro, index) => {
+        const tr = document.createElement('tr');
         
-    const tr = document.createElement('tr');
-
-    const estado = registro.estado || 'Pendiente';
-    if (estado === 'Aprobado') {
-        tr.style.backgroundColor = '#d4edda'; // Verde claro
-    } else if (estado === 'Rechazado') {
-        tr.style.backgroundColor = '#f8d7da'; // Rojo claro
-    }
-
-
-    tr.innerHTML = `
-        <td>${registro.fecha || '-'}</td>
-        <td>${registro.dni || '-'}</td>
-        <td>${registro.nombre || '-'}</td>
-        <td>${registro.turno || '-'}</td>
-        <td>${registro.horaEntrada || '-'}</td>
-        <td>${registro.horaSalida || '-'}</td>
-        <td>${registro.totalHoras || '-'}</td>
-        <td>${registro.turnoIngeniero || '-'}</td>
-        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${registro.observaciones}">${registro.observaciones || '-'}</td>
-        <td>${registro.veinticincoNocturno || '0'}</td>
-        <td>${registro.veinticinco5am7pm || '0'}</td>
-        <td>${registro.cincuenta7pm5am || '0'}</td>
-        <td>${registro.prolongacionNoct75 || '0'}</td>
-        <td>${registro.feriadosDomingos100 || '0'}</td>
-        <td>
-            <button class="btn-edit" onclick="editarRegistro(${indiceReal})" title="Editar">✏️</button>
-            <button class="btn-delete" onclick="eliminarRegistro(${indiceReal})" title="Eliminar">🗑️</button>
-            ${estado === 'Pendiente' ? `
-                    <button class="btn-approve" onclick="aprobarRegistro(${indiceReal})" title="Aprobar">✓</button>
-                    <button class="btn-reject" onclick="rechazarRegistro(${indiceReal})" title="Rechazar">✗</button>
-                ` : `
-                    <span class="badge badge-${estado === 'Aprobado' ? 'success' : 'danger'}">${estado}</span>
-                `}
-        </td>
+        // Determinar color de fondo según estado
+        let colorFondo = '';
+        const estado = (registro.estado || '').toLowerCase();
+        if (estado === 'aprobado') {
+            colorFondo = 'background-color: #97e5a9ff;'; 
+        } else if (estado === 'rechazado') {
+            colorFondo = 'background-color: #fa7575ff;'; 
+        }
+        tr.style = colorFondo;
+        tr.innerHTML = `
+            <td>${registro.fecha || '-'}</td>
+            <td>${registro.dni || '-'}</td>
+            <td>${registro.nombre || '-'}</td>
+            <td>${registro.turno || '-'}</td>
+            <td>${registro.horaEntrada || '-'}</td>
+            <td>${registro.horaSalida || '-'}</td>
+            <td>${registro.totalHoras || '-'}</td>
+            <td>${registro.turnoIngeniero || '-'}</td>
+            <td>${registro.observaciones || '-'}</td>
+            <td>${registro.veinticincoNocturno || '0'}</td>
+            <td>${registro.veinticinco5am7pm || '0'}</td>
+            <td>${registro.cincuenta7pm5am || '0'}</td>
+            <td>${registro.prolongacionNoct75 || '0'}</td>
+            <td>${registro.feriadosDomingos100 || '0'}</td>
+           <td style="white-space: nowrap;">
+           <button class="btn-approve" onclick="aprobarRegistro(${index})" title="Aprobar">✓</button>
+                <button class="btn-reject" onclick="rechazarRegistro(${index})" title="Rechazar">✗</button>
+                <button class="btn-edit" onclick="editarRegistro(${index})" title="Editar">✏️</button>
+                <button class="btn-delete" onclick="eliminarRegistro(${index})" title="Eliminar">🗑️</button>
+            </td>
         `;
         
         tbody.appendChild(tr);
     });
-
     
-    // Actualizar info de paginación
-    document.getElementById('showingFrom').textContent = registrosMostrar.length > 0 ? inicio + 1 : 0;
-    document.getElementById('showingTo').textContent = Math.min(fin, registrosMostrar.length);
-    document.getElementById('totalRecords').textContent = registrosMostrar.length;
-    
-    // Actualizar botones de paginación
-    actualizarPaginacion();
+    // AGREGADO: Inicializar DataTables
+    tablaDataTable = $('#tablaAsistencias').DataTable({
+        // Idioma en español
+        language: {
+            search: "🔍 Buscar:",
+            lengthMenu: "Mostrar _MENU_ registros por página",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+            infoEmpty: "Mostrando 0 a 0 de 0 registros",
+            infoFiltered: "(filtrado de _MAX_ registros totales)",
+            paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior"
+            },
+            zeroRecords: "No se encontraron registros",
+            emptyTable: "No hay datos disponibles"
+        },
+        // Paginación
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+        // Ordenamiento por defecto (fecha descendente)
+        order: [[0, 'desc']],
+        // Configuración de columnas
+        columnDefs: [
+            { 
+                targets: [14], // Columna de acciones
+                orderable: false,
+                searchable: false,
+            },
+            {
+                targets: [6, 9, 10, 11, 12, 13], // Columnas numéricas
+                className: 'dt-center'
+            }
+        ],
+        
+        // Botones de exportación
+        dom:   '<"top d-flex justify-content-between align-items-center"<"d-flex align-items-center gap-3"B l>f>rt<"bottom"ip><"clear">',
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                text: '📊 Exportar a Excel',
+                className: 'btn btn-success',
+                title: 'Reporte_Horas_Extras',
+                exportOptions: {
+                    columns: ':not(:last-child)' // Excluir columna de acciones
+                }
+            }
+        ],  
+        // Ajuste de columnas
+        autoWidth: false,
+        scrollX: true,
+        // Mantener estado entre recargas
+        stateSave: true,
+        stateDuration: -1, // Guardar indefinidamente
+        // Diseño responsive
+        responsive: false
+    });
 }
-
-
 
 
 async function aprobarRegistro(indice) {
@@ -368,8 +387,9 @@ async function aprobarRegistro(indice) {
 
 
 async function rechazarRegistro(indice) {
-    if (!confirm('¿Está seguro de rechazar esta solicitud?')) return;
     const registro = registrosFiltrados[indice];
+    if (!confirm('¿Está seguro de rechazar esta solicitud?')) return;
+    
     await cambiarEstadoRegistro(registro.filaSheet, 'Rechazado');
 }
 
@@ -399,41 +419,6 @@ async function cambiarEstadoRegistro(filaSheet, nuevoEstado) {
 }
 
 
-
-
-
-// Buscar en tabla
-function buscarEnTabla() {
-    const texto = document.getElementById('searchBox').value.toLowerCase();
-    
-    if (!texto) {
-        registrosFiltrados = [...todosLosRegistros];
-    } else {
-        const textoLimpio = texto.replace(/[-\s]/g, '');
-        registrosFiltrados = todosLosRegistros.filter(registro => {
-            const dni = String(registro.dni ?? '').toLowerCase().replace(/[-\s]/g, '');
-            const nombre = String(registro.nombre ?? '').toLowerCase();
-            const fecha = String(registro.fecha ?? '');
-            const turno = String(registro.turno ?? '').toLowerCase();
-            const ingeniero = String(registro.turnoIngeniero ?? '').toLowerCase();
-            const estado = String(registro.estado ?? '').toLowerCase();
-
-            return (
-                dni.includes(textoLimpio) ||
-                nombre.includes(texto) ||
-                fecha.includes(texto) ||
-                turno.includes(texto) ||
-                ingeniero.includes(texto) ||
-                estado.includes(texto)
-            );
-        });
-        registrosFiltrados = ordenarRegistroEstado(registrosFiltrados)
-    }
-    
-    paginaActual = 1;
-    mostrarDatos();
-}
-
 // Aplicar filtros de fecha
 function aplicarFiltros() {
     const fechaDesde = document.getElementById('fechaDesde').value;
@@ -443,88 +428,18 @@ function aplicarFiltros() {
         if (fechaDesde && registro.fecha < fechaDesde) return false;
         if (fechaHasta && registro.fecha > fechaHasta) return false;
         return true;
-    });
-    
-    paginaActual = 1;
+    });    
     mostrarDatos();
 }
+
 
 // Limpiar filtros
 function limpiarFiltros() {
     document.getElementById('fechaDesde').value = '';
     document.getElementById('fechaHasta').value = '';
-    document.getElementById('searchBox').value = '';
     
     registrosFiltrados = [...todosLosRegistros];
-    paginaActual = 1;
     mostrarDatos();
-}
-
-
-
-
-// Cambiar cantidad de entradas por página
-function cambiarEntradas() {
-    registrosPorPagina = parseInt(document.getElementById('entriesPerPage').value);
-    paginaActual = 1;
-    mostrarDatos();
-}
-
-// Paginación
-function paginaAnterior() {
-    if (paginaActual > 1) {
-        paginaActual--;
-        mostrarDatos();
-    }
-}
-
-function paginaSiguiente() {
-     let registrosMostrar = [...registrosFiltrados];
-    if (sesionActual && sesionActual.rol !== 'admin') {
-        registrosMostrar = registrosMostrar.filter(r => {
-            const turnoIng = (r.turnoIngeniero || '').replace(/^Ing\.\s*/i, '').trim();
-            const sesionUser = (sesionActual.user || '').replace(/^Ing\.\s*/i, '').trim();
-            return turnoIng.toLowerCase() === sesionUser.toLowerCase();
-        });
-    }
-    
-    const totalPaginas = Math.ceil(registrosMostrar.length / registrosPorPagina);
-    if (paginaActual < totalPaginas) {
-        paginaActual++;
-        mostrarDatos();
-    }
-}
-
-function actualizarPaginacion() {
-    // APLICAR EL MISMO FILTRO AQUÍ
-    let registrosMostrar = [...registrosFiltrados];
-    if (sesionActual && sesionActual.rol !== 'admin') {
-        registrosMostrar = registrosMostrar.filter(r => {
-            const turnoIng = (r.turnoIngeniero || '').replace(/^Ing\.\s*/i, '').trim();
-            const sesionUser = (sesionActual.user || '').replace(/^Ing\.\s*/i, '').trim();
-            return turnoIng.toLowerCase() === sesionUser.toLowerCase();
-        });
-    }
-    const totalPaginas = Math.ceil(registrosFiltrados.length / registrosPorPagina);
-    
-    document.getElementById('btnAnterior').disabled = paginaActual === 1;
-    document.getElementById('btnSiguiente').disabled = paginaActual === totalPaginas;
-    
-    // Números de página
-    const paginationNumbers = document.getElementById('paginationNumbers');
-    paginationNumbers.innerHTML = '';
-    
-    for (let i = 1; i <= Math.min(totalPaginas, 5); i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = 'page-number';
-        if (i === paginaActual) btn.classList.add('active');
-        btn.onclick = () => {
-            paginaActual = i;
-            mostrarDatos();
-        };
-        paginationNumbers.appendChild(btn);
-    }
 }
 
 
@@ -553,14 +468,11 @@ async function abrirModal(modalId) {
             if (dniValidation) {
                 dniValidation.classList.remove('show');
             }
-
-            // Cargar empleados si no están cargados
-            /*if (!empleadosCache) {
-                cargarEmpleados();
-            }*/
+       
         }
     }
 }
+
 
 function cerrarModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -569,19 +481,17 @@ function cerrarModal(modalId) {
     }
 }
 
-// Variable para el índice a eliminar
-let indiceAEliminar = null;
+
+
 
 // Función para guardar desde el modal de nuevo registro
 async function guardarNuevoRegistro() {
-    const form = document.getElementById('attendanceForm');
-    
+    const form = document.getElementById('attendanceForm'); 
     // Validar formulario HTML5
     if (!form.checkValidity()) {
         form.reportValidity();
         return;
     }
-    
     const horaEntrada = document.getElementById('horaEntrada').value;
     const horaSalida = document.getElementById('horaSalida').value;
     
@@ -592,10 +502,8 @@ async function guardarNuevoRegistro() {
         document.getElementById('successMessage').style.display = 'none';
         return;
     }
-    
     // Mostrar loading
     document.getElementById('loadingOverlay').style.display = 'flex';
-    
     // Preparar datos
     const datos = {
         fecha: document.getElementById('fecha').value,
@@ -608,8 +516,6 @@ async function guardarNuevoRegistro() {
         observaciones: document.getElementById('observaciones').value
     };
     
-    
-    
     // Guardar usando la función de api.js
     const resultado = await guardarAsistencia(datos);
     
@@ -620,7 +526,6 @@ async function guardarNuevoRegistro() {
         document.getElementById('successMessage').textContent = '✓ Registro guardado correctamente';
         document.getElementById('successMessage').style.display = 'block';
         document.getElementById('errorMessage').style.display = 'none';
-        
         // Esperar 1 segundos, cerrar modal y recargar
         setTimeout(() => {
             cerrarModal('nuevoRegistroModal');
@@ -633,11 +538,10 @@ async function guardarNuevoRegistro() {
     }
 }
 
+
 // editar registro
 async function editarRegistro(indice) {
     const registro = registrosFiltrados[indice];
-    
-    
     
     // Llenar formulario de edición
     document.getElementById('editIndex').value = indice;
@@ -648,13 +552,11 @@ async function editarRegistro(indice) {
     document.getElementById('editHoraSalida').value = registro.horaSalida || '';
     document.getElementById('editObservaciones').value = registro.observaciones || '';
     document.getElementById('editEstado').value = registro.estado || 'Pendiente';
-
     // Abrir modal
     const modalEditar = document.getElementById('modalEditar');
     if (modalEditar) {
         modalEditar.style.display = 'block';
     }
-    
     /// CARGAR TURNOS E INGENIEROS DINÁMICAMENTE
     await llenarSelectTurnos(document.getElementById('editTurno'));
     document.getElementById('editTurno').value = registro.turno || '';
@@ -669,7 +571,6 @@ async function editarRegistro(indice) {
 async function guardarEdicion() {
     const indice = parseInt(document.getElementById('editIndex').value);
     const registro = registrosFiltrados[indice];
-    
     // Preparar datos actualizados
     const datosActualizados = {
         fecha: document.getElementById('editFecha').value,
@@ -685,51 +586,41 @@ async function guardarEdicion() {
     
     // Mostrar loading
     document.getElementById('loadingOverlay').style.display = 'flex';
-
     try {
 
-        // USANDO GET
-        
-        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=actualizarAsistencia&indiceFila=${registro.filaSheet}&datos=${encodeURIComponent(JSON.stringify(datosActualizados))}`;
-        
+        // USANDO GET  
+        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=actualizarAsistencia&indiceFila=${registro.filaSheet}&datos=${encodeURIComponent(JSON.stringify(datosActualizados))}`;  
         console.log('Actualizando registro...');
-        
         // Hacer la petición GET
         const response = await fetch(url);
-        
         // Leer la respuesta
         const resultado = await response.json();
-        
         console.log('Respuesta:', resultado);
-        
         // Verificar si fue exitoso
         if (resultado.success) {
-
-
-            console.log('✓ Registro actualizado correctamente');
+            console.log(' Registro actualizado correctamente');
             await new Promise(resolve =>setTimeout(resolve,1000));
-
             // Cerrar modal
             cerrarModal('modalEditar');
-            
             // Recargar datos
             await cargarDatos();
-
-            
         } else {
             console.error('Error del servidor:', resultado.error);
             alert('✗ Error: ' + resultado.error);
         }
         
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error(' Error:', error);
         alert('✗ Error al actualizar: ' + error.message);
     } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
     
-
 }
+
+
+// Variable para el índice a eliminar
+let indiceAEliminar = null;
 
 
 // Eliminar registro
@@ -754,24 +645,17 @@ async function confirmarEliminar() {
     try {
         
         const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=eliminarAsistencia&indiceFila=${registro.filaSheet}`;
-        
         const response = await fetch(url);
-        const resultado = await response.json();
-        
-        console.log('Respuesta del servidor:', resultado);
-        
+        const resultado = await response.json();  
+        console.log('Respuesta del servidor:', resultado); 
         if (resultado.success) {
             console.log('✓ Registro eliminado correctamente');
-            
             // Cerrar modal
             cerrarModal('modalEliminar');
-            
             // Limpiar variable
             indiceAEliminar = null;
-            
             // Recargar datos
             await cargarDatos();
-            
         } else {
             console.error('Error del servidor:', resultado.error);
             alert('✗ Error al eliminar: ' + resultado.error);
@@ -790,71 +674,17 @@ async function confirmarEliminar() {
 
 // Exportar a Excel
 function exportarExcel() {
-    let registrosExportar = [...registrosFiltrados];
-    
-    // Si es ingeniero, filtrar sus registros
-    if (sesionActual && sesionActual.rol !== 'admin') {
-        registrosExportar = registrosExportar.filter(r => {
-            const turnoIng = (r.turnoIngeniero || '').replace(/^Ing\.\s*/i, '').trim();
-            const sesionUser = (sesionActual.user || '').replace(/^Ing\.\s*/i, '').trim();
-            return turnoIng.toLowerCase() === sesionUser.toLowerCase();
-        });
-        console.log(`Exportando ${registrosExportar.length} registros del ingeniero ${sesionActual.user}`);
+
+    if (tablaDataTable) {
+        tablaDataTable.button('.buttons-excel').trigger();
+    } else {
+        alert('La tabla no está inicializada');
     }
     
-    if (registrosExportar.length === 0) {
-        alert('No hay datos para exportar');
-        return;
-    }
-    
-    // BOM para UTF-8 (para que Excel reconozca acentos)
-    let csv = '\uFEFF';
-    
-    // Encabezados
-    csv += 'Fecha,DNI,Nombre,Turno,Hora Entrada,Hora Salida,Total Horas,,Ingeniero de Turno,Observaciones,';
-    csv += '25% Nocturno,25% (5am-7pm),50% (7pm-5am),75% Prolongación Nocturna,100% Feriados/Domingos\n';
-    
-    // Datos
-    registrosExportar.forEach(r => {
-        csv += `${r.fecha || ''},`;
-        csv += `${r.dni || ''},`;
-        csv += `"${r.nombre || ''}",`;  // Comillas para nombres con comas
-        csv += `${r.turno || ''},`;
-        csv += `${r.horaEntrada || ''},`;
-        csv += `${r.horaSalida || ''},`;
-        csv += `${r.totalHoras || ''},`;
-        csv += `"${r.turnoIngeniero || ''}",`;  // Comillas para nombres con comas
-        csv += `"${(r.observaciones || '').replace(/"/g, '""')}",`;  // Escapar comillas dobles
-        csv += `${r.veinticincoNocturno || '0'},`;
-        csv += `${r.veinticinco5am7pm || '0'},`;
-        csv += `${r.cincuenta7pm5am || '0'},`;
-        csv += `${r.prolongacionNoct75 || '0'},`;
-        csv += `${r.feriadosDomingos100 || '0'}\n`;
-    });
-    
-    // Crear archivo con codificación UTF-8
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    
-    // Nombre del archivo con fecha y usuario
-    const fechaHoy = new Date().toISOString().split('T')[0];
-    const nombreUsuario = sesionActual.rol === 'admin' ? 'todos' : sesionActual.user.replace(/[^a-zA-Z0-9]/g, '_');
-    a.download = `horas_extras_${nombreUsuario}_${fechaHoy}.csv`;
-    
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    console.log(`✓ Exportados ${registrosExportar.length} registros a CSV`);
 }
 
 
-
 // GENERAR REPORTE MENSUAL
-// ============================================
 async function generarReporteMensual() {
     const mesReporte = document.getElementById('mesReporte').value;
     const sedeId = document.getElementById('sedeReporte').value;
@@ -877,20 +707,15 @@ async function generarReporteMensual() {
     
     try {
         const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=generarReporteMensual&mes=${mesReporte}`;
-        
         console.log('Llamando a:', url);
-        
         const response = await fetch(url);
         const resultado = await response.json();
-        
         console.log('Respuesta:', resultado);
-        
         if (resultado.success) {
             console.log(`✓ Reporte generado con ${resultado.empleados} empleados`);
             
             const fileId = resultado.url.match(/\/d\/(.+?)\//)[1];
             const downloadUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
-            
             
             window.open(downloadUrl, '_blank');
             
@@ -901,7 +726,6 @@ async function generarReporteMensual() {
         } else {
             alert('✗ Error: ' + resultado.error);
         }
-        
     } catch (error) {
         console.error('Error:', error);
         alert('✗ Error al generar reporte: ' + error.message);

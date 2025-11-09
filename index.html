@@ -3,6 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+    
+    <!-- jQuery  -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <!--DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <title>Panel de Administración - Solicitud Horas Extras</title>
     <link rel="stylesheet" href="admin.css" />
   </head>
@@ -34,24 +47,11 @@
           <button class="btn btn-secondary" onclick="limpiarFiltros()">
             Limpiar
           </button>
-          <button class="btn btn-success" onclick="exportarExcel()">
-            Exportar Excel
-          </button>
-        </div>
-
-        <div class="controls-right">
-          <label>Buscar:</label>
-          <input
-            type="text"
-            id="searchBox"
-            placeholder="Buscar..."
-            onkeyup="buscarEnTabla()"
-          />
         </div>
 
         <div class="filter-group" style="margin-left: auto; border-left: 2px solid #ddd; padding-left: 15px;">
             <label>Mes-Reporte:</label>
-            <input type="month" id="mesReporte" value="2025-10" />
+            <input type="month" id="mesReporte" />
             <label >Sede:</label>
             <select id="sedeReporte" required style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
                 <option value="">Cargando sedes...</option>
@@ -70,45 +70,45 @@
         <table id="tablaAsistencias">
           <thead>
             <tr>
-              <th onclick="ordenarTabla('fecha')">
+              <th>
                 Fecha <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('dni')">
+              <th >
                 DNI <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('nombre')">
+              <th >
                 Nombre <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('turno')">
+              <th >
                 Turno <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('entrada')">
+              <th >
                 Entrada <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('salida')">
+              <th >
                 Salida <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('horas')">
+              <th >
                 Total(H) <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('turnoIngeniero')">
+              <th >
                 Ing Turno <span class="sort-icon"></span>
               </th>
               <th>Observaciones</th>
            
-              <th onclick="ordenarTabla('veinticincoNocturno')">
+              <th >
                 25% Noct <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('veinticinco5am7pm')">
+              <th >
                 25% (5am-7pm) <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('cincuenta7pm5am')">
+              <th >
                 50% (7pm-5am) <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('prolongacionNoct75')">
+              <th >
                 75% Prolong <span class="sort-icon"></span>
               </th>
-              <th onclick="ordenarTabla('feriadosDomingos100')">
+              <th >
                 100% F/D <span class="sort-icon"></span>
               </th>
               <th>Acciones</th>
@@ -120,21 +120,7 @@
         </table>
       </div>
 
-      <!-- Paginación -->
-      <div class="pagination-container">
-        <div class="pagination-info">
-          Mostrando <span id="showingFrom">1</span> a
-          <span id="showingTo">10</span> de
-          <span id="totalRecords">0</span> registros
-        </div>
-        <div class="pagination-controls">
-          <button onclick="paginaAnterior()" id="btnAnterior">Anterior</button>
-          <span id="paginationNumbers"></span>
-          <button onclick="paginaSiguiente()" id="btnSiguiente">
-            Siguiente
-          </button>
-        </div>
-      </div>
+  
     </div>
 
     <!-- Modal para Nuevo -->
