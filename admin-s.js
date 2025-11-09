@@ -293,6 +293,27 @@ function mostrarDatos() {
             colorFondo = 'background-color: #fa7575ff;'; 
         }
         tr.style = colorFondo;
+
+
+
+        let botonesHTML = '';
+
+        // Botón APROBAR (✓) - Solo visible si NO está 'aprobado'. Sí es visible si está 'rechazado'
+        if (estado !== 'aprobado') {
+            botonesHTML += `<button class="btn btn-approve btn-aprobar" data-filasheet="${index}" title="Aprobar">✓</button> `;
+        }
+        
+        // Botón RECHAZAR (✗) - Visible si NO está 'rechazado'.
+        if (estado !== 'rechazado') {
+            botonesHTML += `<button class="btn btn-reject btn-rechazar" data-filasheet="${index}" title="Rechazar">✗</button> `;
+        }
+        
+        // Botones EDITAR (✏️) y ELIMINAR (🗑️) - Siempre visibles, independientemente del estado.
+        botonesHTML += `
+            <button class="btn btn-edit btn-editar" data-filasheet="${index}" title="Editar">✏️</button>
+            <button class="btn btn-delete btn-eliminar" data-filasheet="${index}" title="Eliminar">🗑️</button>
+        `;
+
         tr.innerHTML = `
             <td>${registro.fecha || '-'}</td>
             <td>${registro.dni || '-'}</td>
@@ -309,10 +330,7 @@ function mostrarDatos() {
             <td>${registro.prolongacionNoct75 || '0'}</td>
             <td>${registro.feriadosDomingos100 || '0'}</td>
            <td style="white-space: nowrap;">
-           <button class="btn-approve" onclick="aprobarRegistro(${index})" title="Aprobar">✓</button>
-                <button class="btn-reject" onclick="rechazarRegistro(${index})" title="Rechazar">✗</button>
-                <button class="btn-edit" onclick="editarRegistro(${index})" title="Editar">✏️</button>
-                <button class="btn-delete" onclick="eliminarRegistro(${index})" title="Eliminar">🗑️</button>
+            ${botonesHTML}
             </td>
         `;
         
@@ -376,8 +394,60 @@ function mostrarDatos() {
         stateDuration: -1, // Guardar indefinidamente
         // Diseño responsive
         responsive: false
+
+
     });
 }
+
+
+
+$(document).ready(function() {
+    // Escucha clics en la tabla para los botones de acción
+    const tablaSelector = '#tablaAsistencias'; 
+
+    // Botón APROBAR
+    $(document).on('click', tablaSelector + ' .btn-aprobar', function() {
+        // Obtenemos el ID de la fila desde el atributo data-filasheet
+        const filaSheet = $(this).data('filasheet');
+        if ((filaSheet>=0)) {
+            aprobarRegistro(filaSheet);
+        } else {
+             console.error("ID de fila no encontrado para aprobar.");
+        }
+    });
+
+    // Botón RECHAZAR
+    $(document).on('click', tablaSelector + ' .btn-rechazar', function() {
+        const filaSheet = $(this).data('filasheet');
+        if ((filaSheet>=0)) {
+            rechazarRegistro(filaSheet);
+        } else {
+             console.error("ID de fila no encontrado para rechazar.");
+        }
+    });
+
+    // Botón EDITAR
+    $(document).on('click', tablaSelector + ' .btn-editar', function() {
+        const filaSheet = $(this).data('filasheet');
+        if ((filaSheet>=0)) {
+            editarRegistro(filaSheet);
+        } else {
+             console.error("ID de fila no encontrado para editar.");
+        }
+    });
+
+    // Botón ELIMINAR
+    $(document).on('click', tablaSelector + ' .btn-eliminar', function() {
+        const filaSheet = $(this).data('filasheet');
+        if ((filaSheet>=0)) {
+            eliminarRegistro(filaSheet);
+        } else {
+             console.error("ID de fila no encontrado para eliminar.");
+        }
+    });
+
+});
+
 
 
 async function aprobarRegistro(indice) {
