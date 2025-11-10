@@ -294,21 +294,16 @@ function mostrarDatos() {
         }
         tr.style = colorFondo;
 
-
-
         let botonesHTML = '';
 
-        // Botón APROBAR (✓) - Solo visible si NO está 'aprobado'. Sí es visible si está 'rechazado'
         if (estado !== 'aprobado') {
             botonesHTML += `<button class="btn btn-approve btn-aprobar" data-filasheet="${index}" title="Aprobar">✓</button> `;
         }
         
-        // Botón RECHAZAR (✗) - Visible si NO está 'rechazado'.
         if (estado !== 'rechazado') {
             botonesHTML += `<button class="btn btn-reject btn-rechazar" data-filasheet="${index}" title="Rechazar">✗</button> `;
         }
         
-        // Botones EDITAR (✏️) y ELIMINAR (🗑️) - Siempre visibles, independientemente del estado.
         botonesHTML += `
             <button class="btn btn-edit btn-editar" data-filasheet="${index}" title="Editar">✏️</button>
             <button class="btn btn-delete btn-eliminar" data-filasheet="${index}" title="Eliminar">🗑️</button>
@@ -394,7 +389,6 @@ function mostrarDatos() {
         stateDuration: -1, // Guardar indefinidamente
         // Diseño responsive
         responsive: false
-
 
     });
 }
@@ -661,18 +655,18 @@ async function guardarEdicion() {
         // USANDO GET  
         const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=actualizarAsistencia&indiceFila=${registro.filaSheet}&datos=${encodeURIComponent(JSON.stringify(datosActualizados))}`;  
         console.log('Actualizando registro...');
-        // Hacer la petición GET
+        
         const response = await fetch(url);
-        // Leer la respuesta
+        
         const resultado = await response.json();
         console.log('Respuesta:', resultado);
-        // Verificar si fue exitoso
+        
         if (resultado.success) {
             console.log(' Registro actualizado correctamente');
             await new Promise(resolve =>setTimeout(resolve,1000));
-            // Cerrar modal
+            
             cerrarModal('modalEditar');
-            // Recargar datos
+            
             await cargarDatos();
         } else {
             console.error('Error del servidor:', resultado.error);

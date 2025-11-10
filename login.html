@@ -251,7 +251,6 @@
                         selectUsuario.appendChild(option);
                     });
                     
-                    console.log('✓ Usuarios cargados:', usersArray.length);
                 } else {
                     throw new Error('No se pudieron cargar usuarios');
                 }
@@ -329,7 +328,7 @@
                         };
                         
                         localStorage.setItem('sesion', JSON.stringify(sesion));
-                        console.log('✓ Login exitoso:', sesion);
+                        
                         window.location.href = 'index.html';
                     } else {
                         // Password incorrecto
