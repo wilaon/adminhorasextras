@@ -30,6 +30,10 @@
         Ingresar Solicitud
         </button>
 
+      <button class="btn btn-success" style="margin-bottom: 20px; margin-left: 10px;" id="insertarLoteBtn" onclick="abrirModalInsertarLote()">
+        📋 Insertar Horas 25% Default
+      </button>
+
       <!-- Filtros adicionales -->
       <div class="filters-section">
         <div class="filter-group">
@@ -47,23 +51,11 @@
           <button class="btn btn-secondary" onclick="limpiarFiltros()">
             Limpiar
           </button>
-        </div>
+        </div>        
 
-        <div class="filter-group" style="margin-left: auto; border-left: 2px solid #ddd; padding-left: 15px;">
-            <label>Mes-Reporte:</label>
-            <input type="month" id="mesReporte" />
-            <label >Sede:</label>
-            <select id="sedeReporte" required style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
-                <option value="">Cargando sedes...</option>
-            </select>
-            <button class="btn btn-primary" onclick="generarReporteMensual()">
-                📊 Generar Reporte
-            </button>
-        </div>
+    </div>
 
-</div>
-
-      </div>
+    </div>
 
       <!-- Tabla -->
       <div class="table-container">
@@ -95,7 +87,6 @@
                 Ing Turno <span class="sort-icon"></span>
               </th>
               <th>Observaciones</th>
-           
               <th >
                 25% Noct <span class="sort-icon"></span>
               </th>
@@ -119,8 +110,6 @@
           </tbody>
         </table>
       </div>
-
-  
     </div>
 
     <!-- Modal para Nuevo -->
@@ -197,13 +186,81 @@
             Cancelar
             </button>
             <button class="btn btn-primary" onclick="guardarNuevoRegistro()">
-                Guardar
+            Guardar
             </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+
+
+
+    <!-- NUEVO: Modal para inserción en lote de horas 25% default -->
+
+    <div id="modalInsertarLote" class="modal">
+      <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+          <h2>📋 Insertar Horas 25% Nocturno - Lote</h2>
+          <span class="close" onclick="cerrarModal('modalInsertarLote')">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-container">
+            <!-- Configuración -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+              <div class="form-group">
+                <label>Mes a procesar *</label>
+                <input type="month" id="loteMes" required />
+              </div>
+              <div class="form-group">
+                <label>Días trabajados *</label>
+                <input type="number" id="loteDias" min="1" max="31" value="1" required onchange="actualizarResumenLote()" oninput="actualizarResumenLote()" />
+              </div>
+              <div class="form-group">
+                <label>Ingeniero de Turno *</label>
+                <select id="loteIngeniero" required></select>
+              </div>
+            </div>
+
+            <!-- Selección de turno -->
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label>Turno *</label>
+              <div id="turnosRadios" style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+              </div>
+            </div>
+
+            <!-- Lista de colaboradores -->
+            <div style="margin-bottom: 15px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label>Colaboradores disponibles</label>
+                <div>
+                  <button class="btn btn-secondary" onclick="seleccionarTodosColaboradores()">☑️ Seleccionar todos</button>
+                  <button class="btn btn-secondary" onclick="deseleccionarTodosColaboradores()">☐ Deseleccionar todos</button>
+                </div>
+              </div>
+              <div id="listaColaboradoresLote" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-top: 10px;">
+                <div style="text-align: center; color: #666;">Cargando colaboradores...</div>
+              </div>
+            </div>
+
+            <!-- Resumen -->
+            <div id="resumenLote" style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+              <strong>Resumen:</strong>
+              <div>Colaboradores seleccionados: <span id="totalSeleccionados">0</span></div>
+              <div>Horas por colaborador: <span id="horasPorColaborador">0</span></div>
+              <div>Total registros a crear: <span id="totalRegistros">0</span></div>
+              <div>Total horas: <span id="totalHorasLote">0</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="cerrarModal('modalInsertarLote')">Cancelar</button>
+          <button class="btn btn-success" id="btnConfirmarLote" onclick="confirmarInsertarLote()">✅ Insertar Registros</button>
+        </div>
+      </div>
+    </div>
+
 
     <!-- Modal para editar -->
     <div id="modalEditar" class="modal">

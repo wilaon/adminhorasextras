@@ -82,72 +82,6 @@ async function obtenerSedeUsuario(dni) {
 
 
 
-async function cargarSedes() {
-    try {
-        
-        // Obtener usuario logueado
-        const usuario = obtenerUsuarioLogueado();
-        if (!usuario) return;
-        
-        // Obtener información de sede del usuario
-        const infoSede = await obtenerSedeUsuario(usuario.dni);
-        if (!infoSede) {
-            alert(' No se pudo obtener información de sede');
-            return;
-        }
-        
-        const selectSede = document.getElementById('sedeReporte');
-        selectSede.innerHTML = '';
-        
-        // Si es ADMIN → Cargar todas las sedes
-        if (infoSede.esAdmin) {
-            console.log(' Usuario es ADMIN - Acceso a todas las sedes');
-            
-            const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getSedes`);
-            const data = await response.json();
-            
-            if (data.success && data.sedes) {
-                // Opción para todas las sedes
-                selectSede.innerHTML = '<option value=""> Seleccionar </option>';
-                
-                // Agregar cada sede
-                data.sedes.forEach(sede => {
-                    const option = document.createElement('option');
-                    option.value = sede.id;
-                    option.textContent = sede.nombre;
-                    selectSede.appendChild(option);
-                });
-                
-                console.log(' Sedes cargadas:', data.sedes.length);
-                console.log(' Select habilitado - Puede cambiar sede');
-            }
-        } 
-        
-        else {
-            console.log(' Usuario normal - Solo su sede');
-            
-            const option = document.createElement('option');
-            option.value = infoSede.sedeId;
-            option.textContent = infoSede.sedeNombre;
-            option.selected = true;
-            selectSede.appendChild(option);
-            
-            
-            selectSede.disabled = true;
-            selectSede.style.backgroundColor = '#f0f0f0';
-            selectSede.style.cursor = 'not-allowed';
-            
-            console.log(' Sede cargada:', infoSede.sedeNombre);
-            console.log(' Select bloqueado - No puede cambiar sede');
-        }
-        
-    } catch (error) {
-        console.error('Error al cargar sedes:', error);
-        alert(' Error al cargar sedes');
-    }
-}
-
-
 
 // Cerrar sesión
 function cerrarSesion() {
@@ -190,16 +124,13 @@ window.onload = function() {
     // Establecer fechas por defecto
     const hoy = new Date();
 
-    const mesActual = hoy.toISOString().slice(0, 7); // Formato: YYYY-MM
-    document.getElementById('mesReporte').value = mesActual;
+   
     const hace30Dias = new Date();
     hace30Dias.setDate(hoy.getDate() - 30);
     
     document.getElementById('fechaDesde').value = hace30Dias.toISOString().split('T')[0];
     document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
 
-
-    cargarSedes();
     cargarDatos();
 };
 
@@ -548,6 +479,16 @@ function cerrarModal(modalId) {
 
 
 
+function mostrarLoading(mostrar) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = mostrar ? 'flex' : 'none';
+    }
+}
+
+
+
+
 // Función para guardar desde el modal de nuevo registro
 async function guardarNuevoRegistro() {
     const form = document.getElementById('attendanceForm'); 
@@ -797,3 +738,234 @@ async function generarReporteMensual() {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ═══ NUEVO: INSERCIÓN EN LOTE - Horas 25% Nocturno Default ═══
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let colaboradoresLote = [];
+let turnosConfig = {
+  '13:00-20:00': 1,
+  '14:00-21:00': 2,
+  '17:00-23:00': 6,
+  '18:00-00:00': 6,
+  '00:00-06:00': 6
+};
+
+// Abrir modal de inserción en lote
+async function abrirModalInsertarLote() {
+  const modal = document.getElementById('modalInsertarLote');
+  modal.style.display = 'flex';
+  
+  // Establecer mes actual
+  const hoy = new Date();
+  const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+  document.getElementById('loteMes').value = mesActual;
+  
+  // Cargar ingenieros
+  await llenarSelectIngenieros(document.getElementById('loteIngeniero'));
+  
+  // Cargar turnos como radio buttons
+  cargarTurnosRadio();
+  
+  // Cargar colaboradores
+  await cargarColaboradoresLote();
+  
+  // Actualizar resumen
+  actualizarResumenLote();
+}
+
+// Cargar turnos como radio buttons
+function cargarTurnosRadio() {
+  const container = document.getElementById('turnosRadios');
+  container.innerHTML = '';
+  
+  Object.keys(turnosConfig).forEach((turno, index) => {
+    const horas = turnosConfig[turno];
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; background: white;">
+        <input type="radio" name="turnoLote" value="${turno}" data-horas="${horas}" ${index === 0 ? 'checked' : ''} onchange="actualizarResumenLote()">
+        <span><strong>${turno}</strong> (${horas}h)</span>
+      </label>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// Cargar colaboradores para el lote
+async function cargarColaboradoresLote() {
+  const container = document.getElementById('listaColaboradoresLote');
+  container.innerHTML = '<div style="text-align: center; color: #666;">Cargando...</div>';
+  
+  try {
+    const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getEmpleados`);
+    const data = await response.json();
+    
+    if (data.success && data.empleados) {
+      colaboradoresLote = Object.values(data.empleados).sort((a, b) => 
+        a.nombre.localeCompare(b.nombre)
+      );
+      
+      container.innerHTML = '';
+      
+      colaboradoresLote.forEach((emp, index) => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding: 8px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;';
+        div.innerHTML = `
+          <input type="checkbox" class="chkColaborador" data-index="${index}" onchange="actualizarResumenLote()">
+          <span style="min-width: 150px; font-family: monospace;">${emp.DNI}</span>
+          <span>${emp.nombre}</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+  } catch (error) {
+    console.error('Error cargando colaboradores:', error);
+    container.innerHTML = '<div style="color: red;">Error al cargar colaboradores</div>';
+  }
+}
+
+// Seleccionar todos los colaboradores
+function seleccionarTodosColaboradores() {
+  document.querySelectorAll('.chkColaborador').forEach(chk => chk.checked = true);
+  actualizarResumenLote();
+}
+
+// Deseleccionar todos los colaboradores
+function deseleccionarTodosColaboradores() {
+  document.querySelectorAll('.chkColaborador').forEach(chk => chk.checked = false);
+  actualizarResumenLote();
+}
+
+// Actualizar resumen en tiempo real
+function actualizarResumenLote() {
+  const seleccionados = document.querySelectorAll('.chkColaborador:checked').length;
+  const dias = parseInt(document.getElementById('loteDias').value) || 0;
+  const turnoRadio = document.querySelector('input[name="turnoLote"]:checked');
+  const horasPorTurno = turnoRadio ? parseInt(turnoRadio.dataset.horas) : 0;
+  
+  const horasPorColaborador = dias * horasPorTurno;
+  const totalHoras = seleccionados * horasPorColaborador;
+  
+  document.getElementById('totalSeleccionados').textContent = seleccionados;
+  document.getElementById('horasPorColaborador').textContent = horasPorColaborador;
+  document.getElementById('totalRegistros').textContent = seleccionados;
+  document.getElementById('totalHorasLote').textContent = totalHoras;
+}
+
+// Confirmar e insertar registros en lote
+async function confirmarInsertarLote() {
+  const mes = document.getElementById('loteMes').value;
+  const dias = parseInt(document.getElementById('loteDias').value);
+  const ingeniero = document.getElementById('loteIngeniero').value;
+  const turnoRadio = document.querySelector('input[name="turnoLote"]:checked');
+  
+  // Validaciones
+  if (!mes) {
+    alert('Seleccione el mes');
+    return;
+  }
+  if (!dias || dias <= 0) {
+    alert('Ingrese los días trabajados');
+    return;
+  }
+  if (!ingeniero) {
+    alert('Seleccione el ingeniero de turno');
+    return;
+  }
+  if (!turnoRadio) {
+    alert('Seleccione un turno');
+    return;
+  }
+  
+  const seleccionados = [];
+  document.querySelectorAll('.chkColaborador:checked').forEach(chk => {
+    const index = parseInt(chk.dataset.index);
+    seleccionados.push(colaboradoresLote[index]);
+  });
+  
+  if (seleccionados.length === 0) {
+    alert('Seleccione al menos un colaborador');
+    return;
+  }
+  
+  const turno = turnoRadio.value;
+  const horasPorTurno = parseInt(turnoRadio.dataset.horas);
+  const totalHoras = seleccionados.length * dias * horasPorTurno;
+  
+  // Confirmación
+  const confirmar = confirm(
+    `¿Confirmar inserción?\n\n` +
+    `Colaboradores: ${seleccionados.length}\n` +
+    `Turno: ${turno}\n` +
+    `Días: ${dias}\n` +
+    `Horas por colaborador: ${dias * horasPorTurno}\n` +
+    `Total horas: ${totalHoras}\n\n` +
+    `Se crearán ${seleccionados.length} registros.`
+  );
+  
+  if (!confirmar) return;
+  
+  // Mostrar loading
+  mostrarLoading(true);
+  document.getElementById('btnConfirmarLote').disabled = true;
+  
+  try {
+    // Calcular fecha (último día del mes)
+    const [año, mesNum] = mes.split('-');
+    const ultimoDiaMes = new Date(año, mesNum, 0).getDate();
+    const fechaRegistro = `${año}-${mesNum}-${String(ultimoDiaMes).padStart(2, '0')}`;
+    
+    // Preparar datos para enviar
+    const datosLote = {
+      action: 'insertarLoteHoras25',
+      fecha: fechaRegistro,
+      turno: turno,
+      ingeniero: ingeniero,
+      dias: dias,
+      horasPorTurno: horasPorTurno,
+      colaboradores: seleccionados.map(emp => ({
+        dni: emp.DNI,
+        nombre: emp.nombre
+      }))
+    };
+    
+    // Enviar al servidor
+    const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datosLote)
+    });
+    
+    console.log('✓ Petición enviada correctamente');
+        
+        // Esperar un momento para que el servidor procese
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        alert(`✅ Petición enviada!\n\nSe solicitó insertar ${seleccionados.length} registros.\n\nLa tabla se recargará para verificar.`);
+        cerrarModal('modalInsertarLote');
+        
+        // Recargar tabla para verificar que se insertaron
+        await cargarDatos();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al insertar registros: ' + error.message);
+    } finally {
+        mostrarLoading(false);
+        document.getElementById('btnConfirmarLote').disabled = false;
+    }
+}
+
+// Event listener para actualizar resumen cuando cambian los días
+document.addEventListener('DOMContentLoaded', function() {
+  const diasInput = document.getElementById('loteDias');
+  if (diasInput) {
+    diasInput.addEventListener('input', actualizarResumenLote);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
