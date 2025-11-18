@@ -444,7 +444,7 @@ function limpiarFiltros() {
 async function abrirModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'block';
+        modal.style.display = 'flex';
         
         // Si abres el modal de nuevo registro, inicializa el formulario
         if (modalId === 'nuevoRegistroModal') {
@@ -472,7 +472,7 @@ async function abrirModal(modalId) {
 function cerrarModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'none';
+        modal.style.display = 'flex';
     }
 }
 
@@ -525,7 +525,7 @@ async function guardarNuevoRegistro() {
     const resultado = await guardarAsistencia(datos);
     
     // Ocultar loading
-    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('loadingOverlay').style.display = 'flex';
     
     if (resultado.success) {
         document.getElementById('successMessage').textContent = '✓ Registro guardado correctamente';
@@ -560,7 +560,7 @@ async function editarRegistro(indice) {
     // Abrir modal
     const modalEditar = document.getElementById('modalEditar');
     if (modalEditar) {
-        modalEditar.style.display = 'block';
+        modalEditar.style.display = 'flex';
     }
     /// CARGAR TURNOS E INGENIEROS DINÁMICAMENTE
     await llenarSelectTurnos(document.getElementById('editTurno'));
@@ -671,7 +671,7 @@ async function confirmarEliminar() {
         alert('✗ Error de conexión: ' + error.message);
     } finally {
         // Ocultar loading
-        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('loadingOverlay').style.display = 'flex';
     }
 
 }
