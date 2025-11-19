@@ -472,7 +472,7 @@ async function abrirModal(modalId) {
 function cerrarModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'flex';
+        modal.style.display = 'none';
     }
 }
 
