@@ -38,51 +38,96 @@ function mostrarMensaje(elemento, texto, duracion = 5000) {
 }
 
 
-// Llenar un select con opciones dinámicas
+// ═══════════════════════════════════════════════════════════
+// LLENAR SELECT DE TURNOS
+// ═══════════════════════════════════════════════════════════
 async function llenarSelectTurnos(selectElement) {
-    if (!selectElement) return;
+    if (!selectElement) {
+        return;
+    }
     
-    selectElement.innerHTML = '<option value="">Cargando turnos...</option>';
-    
-    const turnos = await cargarTurnos();
-    
-    selectElement.innerHTML = '<option value="">Seleccionar turno...</option>';
-    turnos.forEach(turno => {
-        const option = document.createElement('option');
-        option.value = turno.turno;
-        option.textContent = turno.turno;
-        selectElement.appendChild(option);
-    });
+    try {
+        selectElement.innerHTML = '<option value="">Cargando turnos...</option>';
+        selectElement.disabled = true;
+        
+        const turnos = await cargarTurnos();
+        
+        if (!turnos || !Array.isArray(turnos) || turnos.length === 0) {
+            selectElement.innerHTML = '<option value="">No hay turnos disponibles</option>';
+            return;
+        }
+        
+        selectElement.innerHTML = '<option value="">Seleccionar turno...</option>';
+        
+        turnos.forEach(turno => {
+            const option = document.createElement('option');
+            option.value = turno.turno || turno;
+            option.textContent = turno.turno || turno;
+            selectElement.appendChild(option);
+        });
+        
+        selectElement.disabled = false;
+       
+        
+    } catch (error) {
+        selectElement.innerHTML = '<option value="">Error al cargar</option>';
+    }
 }
 
-// Llenar select de ingenieros
+// ═══════════════════════════════════════════════════════════
+// LLENAR SELECT DE INGENIEROS
+// ═══════════════════════════════════════════════════════════
 async function llenarSelectIngenieros(selectElement) {
-    if (!selectElement) return;
+    if (!selectElement) {
+        return;
+    }
     
-    selectElement.innerHTML = '<option value="">Cargando ingenieros...</option>';
-    
-    const ingenieros = await cargarIngTurno();
-    
-    selectElement.innerHTML = '<option value="">Seleccionar ingeniero...</option>';
-    ingenieros.forEach(ing => {
-        const option = document.createElement('option');
-        option.value = ing.nombre;
-        option.textContent = ing.nombre;
-        selectElement.appendChild(option);
-    });
+    try {
+        selectElement.innerHTML = '<option value="">Cargando ingenieros...</option>';
+        selectElement.disabled = true;
+        
+        const ingenieros = await cargarIngTurno();
+        
+        if (!ingenieros || !Array.isArray(ingenieros) || ingenieros.length === 0) {
+            selectElement.innerHTML = '<option value="">No hay ingenieros disponibles</option>';
+            return;
+        }
+        
+        selectElement.innerHTML = '<option value="">Seleccionar ingeniero...</option>';
+        
+        ingenieros.forEach(ing => {
+            const option = document.createElement('option');
+            option.value = ing.nombre || ing;
+            option.textContent = ing.nombre || ing;
+            selectElement.appendChild(option);
+        });
+        
+        selectElement.disabled = false;
+       
+        
+    } catch (error) {
+        selectElement.innerHTML = '<option value="">Error al cargar</option>';
+    }
 }
 
-// Llenar select
-function llenarSelect(selectElement, opciones){
-
-     if (!selectElement) return;
+// ═══════════════════════════════════════════════════════════
+// LLENAR SELECT GENÉRICO
+// ═══════════════════════════════════════════════════════════
+function llenarSelect(selectElement, opciones) {
+    if (!selectElement) {
+        return;
+    }
+    
+    if (!opciones || !Array.isArray(opciones)) {
+        return;
+    }
+    
     selectElement.innerHTML = '';
-
+    
     opciones.forEach(opcion => {
         const option = document.createElement('option');
-        option.value = opcion.value || opcion.turno || option.nombre;
-        option.textContent = opcion.texto || opcion.turno || option.nombre;
+        option.value = opcion.value || opcion.turno || opcion.nombre || opcion;
+        option.textContent = opcion.texto || opcion.turno || opcion.nombre || opcion;
         selectElement.appendChild(option);
     });
 }
-

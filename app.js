@@ -139,26 +139,31 @@ function inicializarEventos() {
 
 // Inicialización
 async function inicializar() {
-    // Establecer fecha actual
-    elementos.fecha.value = obtenerFechaActual();
+    try{
+        elementos.fecha.value = obtenerFechaActual();
     
-    // Iniciar reloj
-    actualizarReloj();
-    setInterval(actualizarReloj, 1000);
-    
-    // Cargar empleados
-    await cargarEmpleados();
+        // Iniciar reloj
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
+        
+        // Cargar empleados
+        await cargarEmpleados();
 
-    // Llenar select Turnos dinámicamente
-    await llenarSelectTurnos(elementos.turno);
+        // Llenar select Turnos dinámicamente
+        await llenarSelectTurnos(elementos.turno);
 
-    // Llenar select IngTurno dinámicamente
-    await llenarSelectIngenieros(elementos.turnoIngeniero);
-    
-    // Configurar eventos
-    inicializarEventos();
-    
-    console.log('Sistema iniciado');
+        // Llenar select IngTurno dinámicamente
+        await llenarSelectIngenieros(elementos.turnoIngeniero);
+        
+        // Configurar eventos
+        inicializarEventos();
+        
+        console.log('Sistema iniciado');
+    }catch{
+        console.error('❌ Error en inicialización:', error);
+        alert('Error al iniciar el sistema. Por favor recargue la página.');
+    }
+   
 }
 
 // Iniciar cuando el DOM esté listo

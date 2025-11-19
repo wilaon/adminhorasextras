@@ -45,9 +45,6 @@ function obtenerUsuarioLogueado() {
     
     try {
         usuarioLogueado = JSON.parse(sesionStr);
-        console.log(' Usuario logueado:', usuarioLogueado.user);
-        console.log(' DNI:', usuarioLogueado.dni);
-        console.log(' Rol:', usuarioLogueado.rol);
         return usuarioLogueado;
     } catch (error) {
         console.error('Error al leer sesión:', error);
@@ -67,7 +64,6 @@ async function obtenerSedeUsuario(dni) {
         const data = await response.json();
         
         if (data.success) {
-            console.log(' Es Admin:', data.esAdmin);
             return data;
         } else {
             console.error('Error:', data.error);
@@ -176,7 +172,11 @@ async function cargarDatos() {
         document.getElementById('loadingOverlay').style.display = 'flex';
         
         const url = CONFIG.GOOGLE_SCRIPT_URL + '?action=obtenerAsistencias';
+        
         const response = await fetch(url);
+         if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         
         if (data.success && data.registros) {
@@ -490,16 +490,10 @@ function cerrarModal(modalId) {
         });
     });
     
-    // Limpiar variables globales según la modal
-    if (modalId === 'modalEditar') {
-        indiceEditando = null;
-    }
-    if (modalId === 'modalEliminar') {
-        indiceAEliminar = null;
-    }
-    if (modalId === 'modalInsertarLote') {
-        colaboradoresLote = [];
-    }
+   // Limpiar variables globales
+    if (modalId === 'modalEditar') indiceEditando = null;
+    if (modalId === 'modalEliminar') indiceAEliminar = null;
+    if (modalId === 'modalInsertarLote') colaboradoresLote = [];
 }
 
 

@@ -58,41 +58,61 @@ function buscarEmpleado(dni) {
 }
 
 
+// ═══════════════════════════════════════════════════════════
+// CARGAR TURNOS
+// ═══════════════════════════════════════════════════════════
 async function cargarTurnos() {
     try {
         console.log('Cargando turnos desde Sheets...');
-        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getTurnos`);
-        const data = await response.json();
         
-        if (data.success) {
-            console.log('Turnos cargados:', data.turnos.length);
-            return data.turnos;
+        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getTurnos`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
         
-        throw new Error('Error al cargar turnos');
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.turnos)) {
+
+            return data.turnos;
+        } else {
+            console.error('❌ Formato de datos inválido:', data);
+            return [];
+        }
+        
     } catch (error) {
-        console.error('Error cargando turnos:', error);
-       
+        console.error('❌ Error cargando turnos:', error);
+        return [];
     }
 }
 
-
-
+// ═══════════════════════════════════════════════════════════
+// CARGAR INGENIEROS
+// ═══════════════════════════════════════════════════════════
 async function cargarIngTurno() {
     try {
         console.log('Cargando ingenieros desde Sheets...');
-        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getIngTurno`);
-        const data = await response.json();
         
-        if (data.success) {
-            console.log('Ingenieros cargados:', data.ingenieros.length);
-            return data.ingenieros;
+        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getIngTurno`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
         
-        throw new Error('Error al cargar ingenieros');
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.ingenieros)) {
+
+            return data.ingenieros;
+        } else {
+            console.error('❌ Formato de datos inválido:', data);
+            return [];
+        }
+        
     } catch (error) {
-        console.error('Error cargando ingenieros:', error);
-      
+        console.error('❌ Error cargando ingenieros:', error);
+        return [];
     }
 }
 
