@@ -474,6 +474,32 @@ function cerrarModal(modalId) {
     if (modal) {
         modal.style.display = 'none';
     }
+    // Limpiar formularios dentro de la modal
+    const forms = modal.querySelectorAll('form');
+    forms.forEach(form => {
+        // Resetear formulario
+        form.reset();
+        
+        // Remover validación HTML5 de todos los campos
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.setCustomValidity('');
+            if (input.hasAttribute('required')) {
+                input.removeAttribute('required');
+            }
+        });
+    });
+    
+    // Limpiar variables globales según la modal
+    if (modalId === 'modalEditar') {
+        indiceEditando = null;
+    }
+    if (modalId === 'modalEliminar') {
+        indiceAEliminar = null;
+    }
+    if (modalId === 'modalInsertarLote') {
+        colaboradoresLote = [];
+    }
 }
 
 
