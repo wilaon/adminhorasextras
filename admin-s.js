@@ -671,7 +671,7 @@ async function confirmarEliminar() {
         alert('✗ Error de conexión: ' + error.message);
     } finally {
         // Ocultar loading
-        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('loadingOverlay').style.display = 'none';
     }
 
 }
