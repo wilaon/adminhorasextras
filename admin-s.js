@@ -567,7 +567,32 @@ async function guardarNuevoRegistro() {
 // editar registro
 async function editarRegistro(indice) {
     const registro = registrosFiltrados[indice];
+
+    const selectTurno = document.getElementById('editTurno');
+    const selectIngeniero = document.getElementById('editTurnoIngeniero');
+
+    const necesitaCargarTurnos = selectTurno && selectTurno.options.length <= 1;
+    const necesitaCargarIngenieros = selectIngeniero && selectIngeniero.options.length <= 1;
     
+    if (necesitaCargarTurnos || necesitaCargarIngenieros) {
+        mostrarLoading(true);
+        
+        try {
+            // Cargar en paralelo para mayor velocidad
+            await Promise.all([
+                necesitaCargarTurnos ? llenarSelectTurnos(selectTurno) : Promise.resolve(),
+                necesitaCargarIngenieros ? llenarSelectIngenieros(selectIngeniero) : Promise.resolve()
+            ]);
+            
+        } catch (error) {
+            console.error('❌ Error cargando selects:', error);
+        } finally {
+            mostrarLoading(false);
+        }
+    } else {
+        console.log('✅ Usando selects ya cargados (instantáneo)');
+    }
+
     // Llenar formulario de edición
     document.getElementById('editIndex').value = indice;
     document.getElementById('editFecha').value = registro.fecha || '';
@@ -577,17 +602,15 @@ async function editarRegistro(indice) {
     document.getElementById('editHoraSalida').value = registro.horaSalida || '';
     document.getElementById('editObservaciones').value = registro.observaciones || '';
     document.getElementById('editEstado').value = registro.estado || 'Pendiente';
-    // Abrir modal
-    const modalEditar = document.getElementById('modalEditar');
-    if (modalEditar) {
-        modalEditar.style.display = 'flex';
-    }
-    /// CARGAR TURNOS E INGENIEROS DINÁMICAMENTE
-    await llenarSelectTurnos(document.getElementById('editTurno'));
-    document.getElementById('editTurno').value = registro.turno || '';
+   
+
+    if (selectTurno) selectTurno.value = registro.turno || '';
+    if (selectIngeniero) selectIngeniero.value = registro.turnoIngeniero || '';
     
-    await llenarSelectIngenieros(document.getElementById('editTurnoIngeniero'));
-    document.getElementById('editTurnoIngeniero').value = registro.turnoIngeniero || '';
+    // Abrir modal
+    abrirModal('modalEditar');
+    
+
     
 }
 

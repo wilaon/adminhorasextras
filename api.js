@@ -2,7 +2,18 @@
 
 // Cache de empleados
 let empleadosCache = null;
+let empleadosCacheTimestamp = null;
+
 let cacheTimestamp = null;
+
+let turnosCache = null;
+let turnosCacheTimestamp = null;
+
+let ingenierosCache = null;
+let ingenierosCacheTimestamp = null;
+
+const CACHE_DURATION_EMPLEADOS = 300000; 
+const CACHE_DURATION_TURNOS = 600000;
 
 function formatearDNI(dni) {
     if (!dni) return '';
@@ -24,8 +35,8 @@ async function cargarEmpleados(forzar = false) {
     const ahora = Date.now();
     
     // Usar cache si es válido
-    if (!forzar && empleadosCache && cacheTimestamp && 
-        (ahora - cacheTimestamp) < CONFIG.CACHE_DURATION) {
+    if (!forzar && empleadosCache && empleadosCacheTimestamp && 
+        (ahora - empleadosCacheTimestamp) < CONFIG.CACHE_DURATION_EMPLEADOS) {
         return empleadosCache;
     }
     
@@ -46,7 +57,7 @@ async function cargarEmpleados(forzar = false) {
         throw new Error('Error al cargar empleados');
     } catch (error) {
         console.error('Error:', error);
-        return null;
+        return empleadosCache || null;
     }
 }
 
@@ -61,58 +72,64 @@ function buscarEmpleado(dni) {
 // ═══════════════════════════════════════════════════════════
 // CARGAR TURNOS
 // ═══════════════════════════════════════════════════════════
-async function cargarTurnos() {
+async function cargarTurnos(forzar = false) {
+    const ahora = Date.now();
+
+    if (!forzar && turnosCache && turnosCacheTimestamp && 
+        (ahora - turnosCacheTimestamp) < CACHE_DURATION_TURNOS) {
+        return turnosCache;
+    }
+
     try {
         console.log('Cargando turnos desde Sheets...');
-        
         const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getTurnos`);
-        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
-        
         const data = await response.json();
-        
         if (data.success && Array.isArray(data.turnos)) {
-
-            return data.turnos;
+            turnosCache = data.turnos;
+            turnosCacheTimestamp = ahora;
+            return turnosCache;
         } else {
             console.error('❌ Formato de datos inválido:', data);
-            return [];
-        }
-        
+            return turnosCache || [];
+        } 
     } catch (error) {
         console.error('❌ Error cargando turnos:', error);
-        return [];
+        return turnosCache || [];
     }
 }
 
 // ═══════════════════════════════════════════════════════════
 // CARGAR INGENIEROS
 // ═══════════════════════════════════════════════════════════
-async function cargarIngTurno() {
+async function cargarIngTurno(forzar = false) {
+     const ahora = Date.now();
+
+    if (!forzar && ingenierosCache && ingenierosCacheTimestamp && 
+        (ahora - ingenierosCacheTimestamp) < CACHE_DURATION_TURNOS) {
+        return ingenierosCache;
+    }
+
     try {
         console.log('Cargando ingenieros desde Sheets...');
-        
         const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getIngTurno`);
-        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
-        
         const data = await response.json();
-        
         if (data.success && Array.isArray(data.ingenieros)) {
-
-            return data.ingenieros;
+            ingenierosCache = data.ingenieros;
+            ingenierosCacheTimestamp = ahora;
+            return ingenierosCache;
         } else {
             console.error('❌ Formato de datos inválido:', data);
-            return [];
+            return ingenierosCache || [];
         }
-        
     } catch (error) {
         console.error('❌ Error cargando ingenieros:', error);
-        return [];
+        return ingenierosCache || [];
     }
 }
 
@@ -133,8 +150,7 @@ async function validarLoginServidor(usuario, password) {
         });
         
         const data = await response.json();
-        console.log('Respuesta de validación:', data);
-        
+
         return data;
     } catch (error) {
         console.error('Error validando login:', error);
@@ -146,7 +162,6 @@ async function validarLoginServidor(usuario, password) {
 // Guardar asistencia en Google Sheets
 async function guardarAsistencia(datos) {
     try {
-        
         // Preparar fila
         const fila = [
             new Date().toISOString(),
@@ -159,9 +174,6 @@ async function guardarAsistencia(datos) {
             datos.turnoIngeniero,
             datos.observaciones || '',
         ];
-
-        
-        
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -180,4 +192,14 @@ async function guardarAsistencia(datos) {
         console.error('Error:', error);
         return { success: false, error: error.message };
     }
+}
+
+
+function limpiarCache() {
+    empleadosCache = null;
+    empleadosCacheTimestamp = null;
+    turnosCache = null;
+    turnosCacheTimestamp = null;
+    ingenierosCache = null;
+    ingenierosCacheTimestamp = null;
 }
