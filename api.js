@@ -64,7 +64,6 @@ async function cargarEmpleados(forzar = false) {
 // Buscar empleado en cache local
 function buscarEmpleado(dni) {
     if (!empleadosCache) return null;
-
     return empleadosCache[dni] || null;
 }
 

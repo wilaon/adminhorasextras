@@ -1,4 +1,4 @@
-// admin-simple.js - Todo en un archivo para evitar conflictos
+// admin-simple.js 
 
 // Variables globales
 let todosLosRegistros = [];
@@ -8,6 +8,15 @@ let registrosPorPagina = 20;
 let sesionActual = null;
 let usuarioLogueado= null;
 let tablaDataTable = null;
+
+let colaboradoresLote = [];
+let turnosConfig = {
+  '13:00-20:00': 1,
+  '14:00-21:00': 2,
+  '17:00-23:00': 6,
+  '18:00-00:00': 6,
+  '00:00-06:00': 6
+};
 
 
 // Verificar sesión al cargar
@@ -23,7 +32,7 @@ function verificarSesion() {
     
     // Verificar si la sesión no ha expirado (24 horas)
     const ahora = new Date().getTime();
-    const tiempoExpiracion = 1 * 60 * 60 * 1000; // 24 horas
+    const tiempoExpiracion = 1 * 60 * 60 * 1000; // 1 hora
     
     if (ahora - sesion.timestamp > tiempoExpiracion) {
         cerrarSesion();
@@ -56,6 +65,13 @@ function obtenerUsuarioLogueado() {
 
 
 
+function cerrarSesion() {
+    localStorage.removeItem('sesion');
+    window.location.href = 'login.html';
+}
+
+
+
 async function obtenerSedeUsuario(dni) {
     try {
         console.log('Consultando sede para DNI:', dni);
@@ -75,16 +91,6 @@ async function obtenerSedeUsuario(dni) {
         return null;
     }
 }
-
-
-
-
-// Cerrar sesión
-function cerrarSesion() {
-    localStorage.removeItem('sesion');
-    window.location.href = 'login.html';
-}
-
 
 
 
@@ -108,29 +114,6 @@ function mostrarInfoUsuario(sesion) {
 
 
 
-// Función principal - Se ejecuta cuando carga la página
-window.onload = function() {
-    console.log('Página cargada, iniciando...');
-    
-    sesionActual = verificarSesion();
-    if (!sesionActual) return;
-
-    mostrarInfoUsuario(sesionActual);
-    
-    // Establecer fechas por defecto
-    const hoy = new Date();
-
-   
-    const hace30Dias = new Date();
-    hace30Dias.setDate(hoy.getDate() - 30);
-    
-    document.getElementById('fechaDesde').value = hace30Dias.toISOString().split('T')[0];
-    document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
-
-    cargarDatos();
-};
-
-
 function ordenarRegistroEstado(registros){
     return registros.sort((a,b)=> {
 
@@ -146,7 +129,7 @@ function ordenarRegistroEstado(registros){
           return nombreA.localeCompare(nombreB)  
         }
         const estadoA = (a.estado || 'Pendiente').toLowerCase();
-        const estadoB = (a.estado || 'Pendiente').toLowerCase();
+        const estadoB = (b.estado || 'Pendiente').toLowerCase();
         const prioridad = {
             'pendiente':0,
             '':0,
@@ -170,14 +153,45 @@ async function cargarDatos() {
     try {
         // Mostrar loading
         document.getElementById('loadingOverlay').style.display = 'flex';
+
+        const sesion = verificarSesion();
+        if (!sesion) {
+            console.error('❌ No hay sesión válida');
+            return;
+        }
         
-        const url = CONFIG.GOOGLE_SCRIPT_URL + '?action=obtenerAsistencias';
+        console.log('✅ Sesión válida:', {
+            usuario: sesion.usuario,
+            nombre: sesion.nombre,
+            rol: sesion.rol
+        });
+        
+        let url = CONFIG.GOOGLE_SCRIPT_URL + '?action=obtenerAsistencias';
+
+        // ═══ PASO 3: Agregar filtro según rol ═══
+        if (sesion.rol !== 'admin') {
+            const nombreIngeniero = sesion.nombre || sesion.usuario;
+            url += `&ingeniero=${encodeURIComponent(nombreIngeniero)}`;
+            console.log(`🔒 Filtrando registros del ingeniero: "${nombreIngeniero}"`);
+        } else {
+            console.log('👨‍💼 Modo Administrador - Mostrando todos los registros');
+        }
+        
+        console.log('📡 URL completa:', url);
         
         const response = await fetch(url);
+
          if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+
+
         const data = await response.json();
+        console.log('📥 Datos recibidos:', {
+            success: data.success,
+            totalRegistros: data.registros ? data.registros.length : 0
+        });
         
         if (data.success && data.registros) {
             todosLosRegistros = ordenarRegistroEstado( data.registros);
@@ -206,6 +220,7 @@ function mostrarDatos() {
     }
     const tbody = document.getElementById('tablaBody');
     tbody.innerHTML = '';
+
     if (registrosFiltrados.length === 0) {
         tbody.innerHTML = '<tr><td colspan="15" style="text-align: center;">No hay registros</td></tr>';
         return;
@@ -318,7 +333,6 @@ function mostrarDatos() {
         // Mantener estado entre recargas
         stateSave: true,
         stateDuration: -1, // Guardar indefinidamente
-        // Diseño responsive
         responsive: false
 
     });
@@ -375,56 +389,24 @@ $(document).ready(function() {
 
 
 
-async function aprobarRegistro(indice) {
-    const registro = registrosFiltrados[indice];
-    await cambiarEstadoRegistro(registro.filaSheet, 'Aprobado');
-}
-
-
-async function rechazarRegistro(indice) {
-    const registro = registrosFiltrados[indice];
-    if (!confirm('¿Está seguro de rechazar esta solicitud?')) return;
-    
-    await cambiarEstadoRegistro(registro.filaSheet, 'Rechazado');
-}
-
-
-async function cambiarEstadoRegistro(filaSheet, nuevoEstado) {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    
-    try {
-        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=cambiarEstado&indiceFila=${filaSheet}&estado=${nuevoEstado}`;
-        
-        const response = await fetch(url);
-        const resultado = await response.json();
-        
-        if (resultado.success) {
-            console.log(`✓ Estado cambiado a: ${nuevoEstado}`);
-            await cargarDatos();
-        } else {
-            alert('✗ Error: ' + resultado.error);
-        }
-        
-    } catch (error) {
-        console.error('Error:', error);
-        alert('✗ Error al cambiar estado');
-    } finally {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }
-}
 
 
 // Aplicar filtros de fecha
-function aplicarFiltros() {
+async function aplicarFiltros() {
+
+    await cargarDatos();
+    
     const fechaDesde = document.getElementById('fechaDesde').value;
     const fechaHasta = document.getElementById('fechaHasta').value;
     
-    registrosFiltrados = todosLosRegistros.filter(registro => {
-        if (fechaDesde && registro.fecha < fechaDesde) return false;
-        if (fechaHasta && registro.fecha > fechaHasta) return false;
-        return true;
-    });    
-    mostrarDatos();
+    if (fechaDesde || fechaHasta) {
+        registrosFiltrados = todosLosRegistros.filter(registro => {
+            if (fechaDesde && registro.fecha < fechaDesde) return false;
+            if (fechaHasta && registro.fecha > fechaHasta) return false;
+            return true;
+        });
+        mostrarDatos();
+    }
 }
 
 
@@ -455,7 +437,6 @@ async function abrirModal(modalId) {
             document.getElementById('attendanceForm').reset();
             document.getElementById('fecha').value = obtenerFechaActual();
             
-            // CARGAR TURNOS E INGENIEROS DINÁMICAMENTE
             await llenarSelectTurnos(document.getElementById('turno'));
             await llenarSelectIngenieros(document.getElementById('turnoIngeniero'));
             
@@ -469,48 +450,9 @@ async function abrirModal(modalId) {
 }
 
 
-function cerrarModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'none';
-    }
-    // Limpiar formularios dentro de la modal
-    const forms = modal.querySelectorAll('form');
-    forms.forEach(form => {
-        // Resetear formulario
-        form.reset();
-        
-        // Remover validación HTML5 de todos los campos
-        const inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            input.setCustomValidity('');
-            if (input.hasAttribute('required')) {
-                input.removeAttribute('required');
-            }
-        });
-    });
-    
-   // Limpiar variables globales
-    if (modalId === 'modalEditar') indiceEditando = null;
-    if (modalId === 'modalEliminar') indiceAEliminar = null;
-    if (modalId === 'modalInsertarLote') colaboradoresLote = [];
-}
-
-
-
-
-function mostrarLoading(mostrar) {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-        overlay.style.display = mostrar ? 'flex' : 'none';
-    }
-}
-
-
-
-
 // Función para guardar desde el modal de nuevo registro
 async function guardarNuevoRegistro() {
+
     const form = document.getElementById('attendanceForm'); 
     // Validar formulario HTML5
     if (!form.checkValidity()) {
@@ -545,7 +487,7 @@ async function guardarNuevoRegistro() {
     const resultado = await guardarAsistencia(datos);
     
     // Ocultar loading
-    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('loadingOverlay').style.display = 'none';
     
     if (resultado.success) {
         document.getElementById('successMessage').textContent = '✓ Registro guardado correctamente';
@@ -567,32 +509,7 @@ async function guardarNuevoRegistro() {
 // editar registro
 async function editarRegistro(indice) {
     const registro = registrosFiltrados[indice];
-
-    const selectTurno = document.getElementById('editTurno');
-    const selectIngeniero = document.getElementById('editTurnoIngeniero');
-
-    const necesitaCargarTurnos = selectTurno && selectTurno.options.length <= 1;
-    const necesitaCargarIngenieros = selectIngeniero && selectIngeniero.options.length <= 1;
     
-    if (necesitaCargarTurnos || necesitaCargarIngenieros) {
-        mostrarLoading(true);
-        
-        try {
-            // Cargar en paralelo para mayor velocidad
-            await Promise.all([
-                necesitaCargarTurnos ? llenarSelectTurnos(selectTurno) : Promise.resolve(),
-                necesitaCargarIngenieros ? llenarSelectIngenieros(selectIngeniero) : Promise.resolve()
-            ]);
-            
-        } catch (error) {
-            console.error('❌ Error cargando selects:', error);
-        } finally {
-            mostrarLoading(false);
-        }
-    } else {
-        console.log('✅ Usando selects ya cargados (instantáneo)');
-    }
-
     // Llenar formulario de edición
     document.getElementById('editIndex').value = indice;
     document.getElementById('editFecha').value = registro.fecha || '';
@@ -602,15 +519,10 @@ async function editarRegistro(indice) {
     document.getElementById('editHoraSalida').value = registro.horaSalida || '';
     document.getElementById('editObservaciones').value = registro.observaciones || '';
     document.getElementById('editEstado').value = registro.estado || 'Pendiente';
-   
-
-    if (selectTurno) selectTurno.value = registro.turno || '';
-    if (selectIngeniero) selectIngeniero.value = registro.turnoIngeniero || '';
+    document.getElementById('editTurno').value = registro.turno || '';
+    document.getElementById('editTurnoIngeniero').value = registro.turnoIngeniero || '';
     
-    // Abrir modal
     abrirModal('modalEditar');
-    
-
     
 }
 
@@ -619,6 +531,7 @@ async function editarRegistro(indice) {
 async function guardarEdicion() {
     const indice = parseInt(document.getElementById('editIndex').value);
     const registro = registrosFiltrados[indice];
+
     // Preparar datos actualizados
     const datosActualizados = {
         fecha: document.getElementById('editFecha').value,
@@ -720,6 +633,82 @@ async function confirmarEliminar() {
 }
 
 
+async function aprobarRegistro(indice) {
+    const registro = registrosFiltrados[indice];
+    await cambiarEstadoRegistro(registro.filaSheet, 'Aprobado');
+}
+
+
+async function rechazarRegistro(indice) {
+    const registro = registrosFiltrados[indice];
+    if (!confirm('¿Está seguro de rechazar esta solicitud?')) return;
+    
+    await cambiarEstadoRegistro(registro.filaSheet, 'Rechazado');
+}
+
+
+async function cambiarEstadoRegistro(filaSheet, nuevoEstado) {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    try {
+        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=cambiarEstado&indiceFila=${filaSheet}&estado=${nuevoEstado}`;
+        
+        const response = await fetch(url);
+        const resultado = await response.json();
+        
+        if (resultado.success) {
+            console.log(`✓ Estado cambiado a: ${nuevoEstado}`);
+            await cargarDatos();
+        } else {
+            alert('✗ Error: ' + resultado.error);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('✗ Error al cambiar estado');
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+}
+
+
+function cerrarModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    // Limpiar formularios dentro de la modal
+    const forms = modal.querySelectorAll('form');
+    forms.forEach(form => {
+        // Resetear formulario
+        form.reset();
+        
+        // Remover validación HTML5 de todos los campos
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.setCustomValidity('');
+            if (input.hasAttribute('required')) {
+                input.removeAttribute('required');
+            }
+        });
+    });
+    
+   // Limpiar variables globales
+    if (modalId === 'modalEditar') indiceEditando = null;
+    if (modalId === 'modalEliminar') indiceAEliminar = null;
+    if (modalId === 'modalInsertarLote') colaboradoresLote = [];
+}
+
+
+
+function mostrarLoading(mostrar) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = mostrar ? 'flex' : 'none';
+    }
+}
+
+
 // Exportar a Excel
 function exportarExcel() {
 
@@ -732,7 +721,7 @@ function exportarExcel() {
 }
 
 
-// GENERAR REPORTE MENSUAL
+/*// GENERAR REPORTE MENSUAL
 async function generarReporteMensual() {
     const mesReporte = document.getElementById('mesReporte').value;
     const sedeId = document.getElementById('sedeReporte').value;
@@ -782,19 +771,7 @@ async function generarReporteMensual() {
     }
 }
 
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ═══ NUEVO: INSERCIÓN EN LOTE - Horas 25% Nocturno Default ═══
-// ═══════════════════════════════════════════════════════════════════════════════
-
-let colaboradoresLote = [];
-let turnosConfig = {
-  '13:00-20:00': 1,
-  '14:00-21:00': 2,
-  '17:00-23:00': 6,
-  '18:00-00:00': 6,
-  '00:00-06:00': 6
-};
+*/
 
 // Abrir modal de inserción en lote
 async function abrirModalInsertarLote() {
@@ -1012,3 +989,30 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
+
+
+// Función principal - Se ejecuta cuando carga la página
+window.onload = async function() {
+    console.log('Página cargada, iniciando...');
+    
+    sesionActual = verificarSesion();
+    if (!sesionActual) return;
+
+    mostrarInfoUsuario(sesionActual);
+    
+    // Establecer fechas por defecto
+    const hoy = new Date();
+
+   
+    const hace30Dias = new Date();
+    hace30Dias.setDate(hoy.getDate() - 30);
+    
+    document.getElementById('fechaDesde').value = hace30Dias.toISOString().split('T')[0];
+    document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
+
+    await llenarSelectTurnos(document.getElementById('editTurno'));
+    await llenarSelectIngenieros(document.getElementById('editTurnoIngeniero'));
+    console.log('✅ Selects pre-cargados');
+
+    await cargarDatos();
+};

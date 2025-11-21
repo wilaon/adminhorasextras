@@ -8,6 +8,8 @@ const CONFIG = {
     
     // Cache
     CACHE_DURATION: 300000, // 5 minutos
+    CACHE_DURATION_EMPLEADOS: 300000,    // 5 minutos
+    CACHE_DURATION_TURNOS: 600000,       // 10 minutos
     
     // Configuración de horas
     HORAS_NORMALES_DIA: 8,
