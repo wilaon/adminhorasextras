@@ -514,7 +514,7 @@ async function guardarEdicion() {
         
         if (resultado.success) {
             console.log(' Registro actualizado correctamente');
-            await cargarDatos(true);
+            await cargarDatos();
             cerrarModal('modalEditar');
            
         } else {
