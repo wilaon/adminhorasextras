@@ -574,7 +574,7 @@ async function guardarEdicion() {
     try {
         console.log('📤 Actualizando vía POST...');
         
-        // ✅ SIN mode: 'no-cors' - Google Apps Script maneja CORS
+        // SIN mode: 'no-cors' - Google Apps Script maneja CORS
         const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',
             headers: {
@@ -589,10 +589,10 @@ async function guardarEdicion() {
         
         // ✅ Puedes leer la respuesta
         const resultado = await response.json();
-        console.log('📥 Respuesta:', resultado);
+        console.log(' Respuesta:', resultado);
         
         if (resultado.success) {
-            console.log('✅ Actualizado');
+            console.log(' Actualizado');
             cerrarModal('modalEditar');
             await cargarDatos();
             
@@ -613,7 +613,7 @@ async function guardarEdicion() {
         }
         
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error(' Error:', error);
         alert('✗ Error: ' + error.message);
     } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
