@@ -483,7 +483,7 @@ async function editarRegistro(indice) {
 
 
 // Guardar edición
-async function guardarEdicion() {
+/*async function guardarEdicion() {
     const indice = parseInt(document.getElementById('editIndex').value);
     const registro = registrosFiltrados[indice];
 
@@ -550,8 +550,74 @@ async function guardarEdicion() {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
     
-}
+}*/
 
+async function guardarEdicion() {
+    const indice = parseInt(document.getElementById('editIndex').value);
+    const registro = registrosFiltrados[indice];
+
+    const datosActualizados = {
+        fecha: document.getElementById('editFecha').value,
+        dni: document.getElementById('editDni').value,
+        nombre: document.getElementById('editNombre').value,
+        horaEntrada: document.getElementById('editHoraEntrada').value,
+        horaSalida: document.getElementById('editHoraSalida').value,
+        turno: document.getElementById('editTurno').value,
+        turnoIngeniero: document.getElementById('editTurnoIngeniero').value,
+        observaciones: document.getElementById('editObservaciones').value,
+        estado: document.getElementById('editEstado').value
+    };
+    
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    try {
+        console.log('📤 Actualizando vía POST...');
+        
+        // ✅ SIN mode: 'no-cors' - Google Apps Script maneja CORS
+        const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'actualizarAsistencia',
+                indiceFila: registro.filaSheet,
+                datos: datosActualizados
+            })
+        });
+        
+        // ✅ Puedes leer la respuesta
+        const resultado = await response.json();
+        console.log('📥 Respuesta:', resultado);
+        
+        if (resultado.success) {
+            console.log('✅ Actualizado');
+            cerrarModal('modalEditar');
+            await cargarDatos();
+            
+            // Reaplicar filtros
+            const fechaDesde = document.getElementById('fechaDesde').value;
+            const fechaHasta = document.getElementById('fechaHasta').value;
+            
+            if (fechaDesde || fechaHasta) {
+                registrosFiltrados = todosLosRegistros.filter(reg => {
+                    if (fechaDesde && reg.fecha < fechaDesde) return false;
+                    if (fechaHasta && reg.fecha > fechaHasta) return false;
+                    return true;
+                });
+                mostrarDatos();
+            }
+        } else {
+            alert('✗ Error: ' + resultado.error);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error:', error);
+        alert('✗ Error: ' + error.message);
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+}
 
 // Variable para el índice a eliminar
 let indiceAEliminar = null;
