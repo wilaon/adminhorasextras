@@ -1011,9 +1011,13 @@ window.onload = async function() {
     document.getElementById('fechaDesde').value = hace30Dias.toISOString().split('T')[0];
     document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
 
-    await llenarSelectTurnos(document.getElementById('editTurno'));
-    await llenarSelectIngenieros(document.getElementById('editTurnoIngeniero'));
+    await Promise.all([
+        cargarDatos(),
+        llenarSelectTurnos(document.getElementById('editTurno')),
+        llenarSelectIngenieros(document.getElementById('editTurnoIngeniero'))
+        
+    ]);
     console.log('✅ Selects pre-cargados');
 
-    await cargarDatos();
+    
 };
