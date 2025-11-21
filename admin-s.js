@@ -513,17 +513,38 @@ async function guardarEdicion() {
         console.log('Respuesta:', resultado);
         
         if (resultado.success) {
-            console.log(' Registro actualizado correctamente');
-            await cargarDatos();
+            console.log('✅ Registro actualizado en servidor');
+            
+            // Cerrar modal PRIMERO
             cerrarModal('modalEditar');
+            
+            // Recargar datos
+            console.log('🔄 Recargando datos...');
+            await cargarDatos();
+            console.log('✅ Datos recargados');
+            
+            // ✅ CLAVE: Reaplicar filtros de fecha si existen
+            const fechaDesde = document.getElementById('fechaDesde').value;
+            const fechaHasta = document.getElementById('fechaHasta').value;
+            
+            if (fechaDesde || fechaHasta) {
+                console.log('🔍 Reaplicando filtros de fecha...');
+                registrosFiltrados = todosLosRegistros.filter(registro => {
+                    if (fechaDesde && registro.fecha < fechaDesde) return false;
+                    if (fechaHasta && registro.fecha > fechaHasta) return false;
+                    return true;
+                });
+                mostrarDatos();
+                console.log('✅ Filtros aplicados');
+            }
            
         } else {
-            console.error('Error del servidor:', resultado.error);
+            console.error('❌ Error del servidor:', resultado.error);
             alert('✗ Error: ' + resultado.error);
         }
         
     } catch (error) {
-        console.error(' Error:', error);
+        console.error('❌ Error:', error);
         alert('✗ Error al actualizar: ' + error.message);
     } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
