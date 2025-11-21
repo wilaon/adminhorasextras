@@ -1101,13 +1101,29 @@ window.onload = async function() {
     document.getElementById('fechaDesde').value = hace30Dias.toISOString().split('T')[0];
     document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
 
-    await Promise.all([
-        cargarDatos(),
-        llenarSelectTurnos(document.getElementById('editTurno')),
-        llenarSelectIngenieros(document.getElementById('editTurnoIngeniero'))
-        
-    ]);
-    console.log('✅ Selects pre-cargados');
+    try {
 
+        await Promise.all([
+            cargarDatos(),
+            llenarSelectTurnos(document.getElementById('editTurno')),
+            llenarSelectIngenieros(document.getElementById('editTurnoIngeniero'))
+            
+        ]);
+        
+        // ✅ AGREGAR ESTO (6 LÍNEAS):
+        const btnGuardarEdicion = document.getElementById('btnGuardarEdicion');
+        if (btnGuardarEdicion) {
+            btnGuardarEdicion.onclick = async function() {
+                await guardarEdicion();
+            };
+            console.log('✅ Event listener de edición configurado');
+        }
+        
+        console.timeEnd('⏱️ Tiempo de carga total');
+        console.log('✅ Sistema iniciado correctamente');
+    } catch (error) {
+        console.error('❌ Error en inicialización:', error);
+        alert('Error al iniciar el sistema. Recargue la página.');
+    }
     
 };
