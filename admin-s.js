@@ -340,56 +340,6 @@ function mostrarDatos() {
 
 
 
-$(document).ready(function() {
-    // Escucha clics en la tabla para los botones de acción
-    const tablaSelector = '#tablaAsistencias'; 
-
-    // Botón APROBAR
-    $(document).on('click', tablaSelector + ' .btn-aprobar', function() {
-        // Obtenemos el ID de la fila desde el atributo data-filasheet
-        const filaSheet = $(this).data('filasheet');
-        if ((filaSheet>=0)) {
-            aprobarRegistro(filaSheet);
-        } else {
-             console.error("ID de fila no encontrado para aprobar.");
-        }
-    });
-
-    // Botón RECHAZAR
-    $(document).on('click', tablaSelector + ' .btn-rechazar', function() {
-        const filaSheet = $(this).data('filasheet');
-        if ((filaSheet>=0)) {
-            rechazarRegistro(filaSheet);
-        } else {
-             console.error("ID de fila no encontrado para rechazar.");
-        }
-    });
-
-    // Botón EDITAR
-    $(document).on('click', tablaSelector + ' .btn-editar', function() {
-        const filaSheet = $(this).data('filasheet');
-        if ((filaSheet>=0)) {
-            editarRegistro(filaSheet);
-        } else {
-             console.error("ID de fila no encontrado para editar.");
-        }
-    });
-
-    // Botón ELIMINAR
-    $(document).on('click', tablaSelector + ' .btn-eliminar', function() {
-        const filaSheet = $(this).data('filasheet');
-        if ((filaSheet>=0)) {
-            eliminarRegistro(filaSheet);
-        } else {
-             console.error("ID de fila no encontrado para eliminar.");
-        }
-    });
-
-});
-
-
-
-
 
 // Aplicar filtros de fecha
 async function aplicarFiltros() {
@@ -466,7 +416,6 @@ async function guardarNuevoRegistro() {
     if (!horaEntrada && !horaSalida) {
         document.getElementById('errorMessage').textContent = 'Ingrese al menos hora de entrada o salida';
         document.getElementById('errorMessage').style.display = 'block';
-        document.getElementById('successMessage').style.display = 'none';
         return;
     }
     // Mostrar loading
@@ -483,26 +432,32 @@ async function guardarNuevoRegistro() {
         observaciones: document.getElementById('observaciones').value
     };
     
-    // Guardar usando la función de api.js
-    const resultado = await guardarAsistencia(datos);
-    
-    // Ocultar loading
-    document.getElementById('loadingOverlay').style.display = 'none';
-    
-    if (resultado.success) {
-        document.getElementById('successMessage').textContent = '✓ Registro guardado correctamente';
-        document.getElementById('successMessage').style.display = 'block';
-        document.getElementById('errorMessage').style.display = 'none';
-        // Esperar 1 segundos, cerrar modal y recargar
-        setTimeout(() => {
-            cerrarModal('nuevoRegistroModal');
-            cargarDatos();
-        }, 1000);
-    } else {
-        document.getElementById('errorMessage').textContent = '✗ Error al guardar el registro';
+    try{
+        // Guardar usando la función de api.js
+        const resultado = await guardarAsistencia(datos);
+        // Ocultar loading
+        document.getElementById('loadingOverlay').style.display = 'none';
+        
+        if (resultado.success) {
+            document.getElementById('successMessage').textContent = '✓ Registro guardado correctamente';
+            document.getElementById('successMessage').style.display = 'block';
+            
+            await cargarDatos(true);
+            // Esperar 1 segundos, cerrar modal y recargar
+            setTimeout(() => {
+                cerrarModal('nuevoRegistroModal');    
+            }, 800);
+        } else {
+            document.getElementById('errorMessage').textContent = '✗ Error al guardar el registro';
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+    }catch (error) {
+        document.getElementById('errorMessage').textContent = '✗ Error: ' + error.message;
         document.getElementById('errorMessage').style.display = 'block';
-        document.getElementById('successMessage').style.display = 'none';
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
     }
+    
 }
 
 
@@ -554,17 +509,14 @@ async function guardarEdicion() {
         console.log('Actualizando registro...');
         
         const response = await fetch(url);
-        
         const resultado = await response.json();
         console.log('Respuesta:', resultado);
         
         if (resultado.success) {
             console.log(' Registro actualizado correctamente');
-            await new Promise(resolve =>setTimeout(resolve,1000));
-            
+            await cargarDatos(true);
             cerrarModal('modalEditar');
-            
-            await cargarDatos();
+           
         } else {
             console.error('Error del servidor:', resultado.error);
             alert('✗ Error: ' + resultado.error);
@@ -583,7 +535,6 @@ async function guardarEdicion() {
 // Variable para el índice a eliminar
 let indiceAEliminar = null;
 
-
 // Eliminar registro
 function eliminarRegistro(indice) {
     indiceAEliminar = indice;
@@ -595,9 +546,7 @@ function eliminarRegistro(indice) {
 async function confirmarEliminar() {
     
     if (indiceAEliminar === null) return;
-    
     const registro = registrosFiltrados[indiceAEliminar];
-    
     console.log('Eliminando registro:');
     
     // Mostrar loading
@@ -616,7 +565,7 @@ async function confirmarEliminar() {
             // Limpiar variable
             indiceAEliminar = null;
             // Recargar datos
-            await cargarDatos();
+            await cargarDatos(true);
         } else {
             console.error('Error del servidor:', resultado.error);
             alert('✗ Error al eliminar: ' + resultado.error);
@@ -658,7 +607,7 @@ async function cambiarEstadoRegistro(filaSheet, nuevoEstado) {
         
         if (resultado.success) {
             console.log(`✓ Estado cambiado a: ${nuevoEstado}`);
-            await cargarDatos();
+            await cargarDatos(true);
         } else {
             alert('✗ Error: ' + resultado.error);
         }
@@ -772,6 +721,60 @@ async function generarReporteMensual() {
 }
 
 */
+
+
+
+
+$(document).ready(function() {
+    // Escucha clics en la tabla para los botones de acción
+    const tablaSelector = '#tablaAsistencias'; 
+
+    // Botón APROBAR
+    $(document).on('click', tablaSelector + ' .btn-aprobar', function() {
+        // Obtenemos el ID de la fila desde el atributo data-filasheet
+        const filaSheet = $(this).data('filasheet');
+        if ((filaSheet>=0)) {
+            aprobarRegistro(filaSheet);
+        } else {
+             console.error("ID de fila no encontrado para aprobar.");
+        }
+    });
+
+    // Botón RECHAZAR
+    $(document).on('click', tablaSelector + ' .btn-rechazar', function() {
+        const filaSheet = $(this).data('filasheet');
+        if ((filaSheet>=0)) {
+            rechazarRegistro(filaSheet);
+        } else {
+             console.error("ID de fila no encontrado para rechazar.");
+        }
+    });
+
+    // Botón EDITAR
+    $(document).on('click', tablaSelector + ' .btn-editar', function() {
+        const filaSheet = $(this).data('filasheet');
+        if ((filaSheet>=0)) {
+            editarRegistro(filaSheet);
+        } else {
+             console.error("ID de fila no encontrado para editar.");
+        }
+    });
+
+    // Botón ELIMINAR
+    $(document).on('click', tablaSelector + ' .btn-eliminar', function() {
+        const filaSheet = $(this).data('filasheet');
+        if ((filaSheet>=0)) {
+            eliminarRegistro(filaSheet);
+        } else {
+             console.error("ID de fila no encontrado para eliminar.");
+        }
+    });
+
+});
+
+
+
+
 
 // Abrir modal de inserción en lote
 async function abrirModalInsertarLote() {
@@ -969,7 +972,7 @@ async function confirmarInsertarLote() {
         cerrarModal('modalInsertarLote');
         
         // Recargar tabla para verificar que se insertaron
-        await cargarDatos();
+        await cargarDatos(true);
         
     } catch (error) {
         console.error('Error:', error);
@@ -1002,8 +1005,6 @@ window.onload = async function() {
     
     // Establecer fechas por defecto
     const hoy = new Date();
-
-   
     const hace30Dias = new Date();
     hace30Dias.setDate(hoy.getDate() - 30);
     
