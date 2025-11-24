@@ -482,7 +482,7 @@ async function editarRegistro(indice) {
 }
 
 
-// Guardar edición
+/*// Guardar edición
 async function guardarEdicion() {
     const indice = parseInt(document.getElementById('editIndex').value);
     const registro = registrosFiltrados[indice];
@@ -550,9 +550,9 @@ async function guardarEdicion() {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
     
-}
+}*/
 
-/*
+
 async function guardarEdicion() {
     const indice = parseInt(document.getElementById('editIndex').value);
     const registro = registrosFiltrados[indice];
@@ -619,7 +619,6 @@ async function guardarEdicion() {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
 }
-*/
 
 
 // Variable para el índice a eliminar
