@@ -91,11 +91,11 @@ async function cargarTurnos(forzar = false) {
             turnosCacheTimestamp = ahora;
             return turnosCache;
         } else {
-            console.error('❌ Formato de datos inválido:', data);
+            console.error(' Formato de datos inválido:', data);
             return turnosCache || [];
         } 
     } catch (error) {
-        console.error('❌ Error cargando turnos:', error);
+        console.error(' Error cargando turnos:', error);
         return turnosCache || [];
     }
 }
@@ -123,11 +123,11 @@ async function cargarIngTurno(forzar = false) {
             ingenierosCacheTimestamp = ahora;
             return ingenierosCache;
         } else {
-            console.error('❌ Formato de datos inválido:', data);
+            console.error(' Formato de datos inválido:', data);
             return ingenierosCache || [];
         }
     } catch (error) {
-        console.error('❌ Error cargando ingenieros:', error);
+        console.error(' Error cargando ingenieros:', error);
         return ingenierosCache || [];
     }
 }

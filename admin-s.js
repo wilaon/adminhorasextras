@@ -83,7 +83,7 @@ async function obtenerSedeUsuario(dni) {
             return data;
         } else {
             console.error('Error:', data.error);
-            alert('❌ ' + data.error);
+            alert(' ' + data.error);
             return null;
         }
     } catch (error) {
@@ -156,11 +156,11 @@ async function cargarDatos() {
 
         const sesion = verificarSesion();
         if (!sesion) {
-            console.error('❌ No hay sesión válida');
+            console.error(' No hay sesión válida');
             return;
         }
         
-        console.log('✅ Sesión válida:', {
+        console.log(' Sesión válida:', {
             usuario: sesion.usuario,
             nombre: sesion.nombre,
             rol: sesion.rol
@@ -172,12 +172,12 @@ async function cargarDatos() {
         if (sesion.rol !== 'admin') {
             const nombreIngeniero = sesion.nombre || sesion.usuario;
             url += `&ingeniero=${encodeURIComponent(nombreIngeniero)}`;
-            console.log(`🔒 Filtrando registros del ingeniero: "${nombreIngeniero}"`);
+            console.log(` Filtrando registros del ingeniero: "${nombreIngeniero}"`);
         } else {
-            console.log('👨‍💼 Modo Administrador - Mostrando todos los registros');
+            console.log(' Modo Administrador - Mostrando todos los registros');
         }
         
-        console.log('📡 URL completa:', url);
+        console.log(' URL completa:', url);
         
         const response = await fetch(url);
 
@@ -188,7 +188,7 @@ async function cargarDatos() {
 
 
         const data = await response.json();
-        console.log('📥 Datos recibidos:', {
+        console.log(' Datos recibidos:', {
             success: data.success,
             totalRegistros: data.registros ? data.registros.length : 0
         });
@@ -280,6 +280,8 @@ function mostrarDatos() {
     
     // AGREGADO: Inicializar DataTables
     tablaDataTable = $('#tablaAsistencias').DataTable({
+
+
         // Idioma en español
         language: {
             search: "🔍 Buscar:",
@@ -326,7 +328,8 @@ function mostrarDatos() {
                     columns: ':not(:last-child)' // Excluir columna de acciones
                 }
             }
-        ],  
+        ],
+        fixedHeader: true,  
         // Ajuste de columnas
         autoWidth: false,
         scrollX: true,
@@ -500,7 +503,7 @@ async function guardarEdicion() {
     
     // 1. Crear el payload completo que se enviará en la URL
     const datosParaEnvio = {
-        action: 'actualizarAsistenciaGET', // ⬅️ Nueva acción que doGet manejará
+        action: 'actualizarAsistenciaGET', //  Nueva acción que doGet manejará
         indiceFila: registro.filaSheet,
         datos: datosActualizados // Objeto JSON completo
     };
@@ -508,7 +511,7 @@ async function guardarEdicion() {
     document.getElementById('loadingOverlay').style.display = 'flex';
     
     try {
-        console.log('📤 Actualizando vía GET Intermediario...');
+        console.log(' Actualizando vía GET Intermediario...');
         
         // 2. Codificar el payload completo en la URL
         // El tamaño de la URL será grande, pero Apps Script lo soporta.
@@ -538,12 +541,12 @@ async function guardarEdicion() {
                 mostrarDatos();
             }
         } else {
-            alert('✗ Error: ' + resultado.error);
+            alert(' Error: ' + resultado.error);
         }
         
     } catch (error) {
         console.error(' Error:', error);
-        alert('✗ Error de conexión: ' + error.message);
+        alert(' Error de conexión: ' + error.message);
     } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
@@ -718,7 +721,7 @@ async function confirmarEliminar() {
         const resultado = await response.json();  
         console.log('Respuesta del servidor:', resultado); 
         if (resultado.success) {
-            console.log('✓ Registro eliminado correctamente');
+            console.log(' Registro eliminado correctamente');
             // Cerrar modal
             cerrarModal('modalEliminar');
             // Limpiar variable
@@ -727,12 +730,12 @@ async function confirmarEliminar() {
             await cargarDatos(true);
         } else {
             console.error('Error del servidor:', resultado.error);
-            alert('✗ Error al eliminar: ' + resultado.error);
+            alert(' Error al eliminar: ' + resultado.error);
         }
         
     } catch (error) {
-        console.error('❌ Error:', error);
-        alert('✗ Error de conexión: ' + error.message);
+        console.error(' Error:', error);
+        alert(' Error de conexión: ' + error.message);
     } finally {
         // Ocultar loading
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -765,15 +768,15 @@ async function cambiarEstadoRegistro(filaSheet, nuevoEstado) {
         const resultado = await response.json();
         
         if (resultado.success) {
-            console.log(`✓ Estado cambiado a: ${nuevoEstado}`);
+            console.log(` Estado cambiado a: ${nuevoEstado}`);
             await cargarDatos(true);
         } else {
-            alert('✗ Error: ' + resultado.error);
+            alert(' Error: ' + resultado.error);
         }
         
     } catch (error) {
         console.error('Error:', error);
-        alert('✗ Error al cambiar estado');
+        alert(' Error al cambiar estado');
     } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
@@ -1127,7 +1130,7 @@ async function confirmarInsertarLote() {
         // Esperar un momento para que el servidor procese
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        alert(`✅ Petición enviada!\n\nSe solicitó insertar ${seleccionados.length} registros.\n\nLa tabla se recargará para verificar.`);
+        alert(`Petición enviada!\n\nSe solicitó insertar ${seleccionados.length} registros.\n\nLa tabla se recargará para verificar.`);
         cerrarModal('modalInsertarLote');
         
         // Recargar tabla para verificar que se insertaron
@@ -1135,7 +1138,7 @@ async function confirmarInsertarLote() {
         
     } catch (error) {
         console.error('Error:', error);
-        alert('❌ Error al insertar registros: ' + error.message);
+        alert('Error al insertar registros: ' + error.message);
     } finally {
         mostrarLoading(false);
         document.getElementById('btnConfirmarLote').disabled = false;
@@ -1179,19 +1182,19 @@ window.onload = async function() {
             
         ]);
         
-        // ✅ AGREGAR ESTO (6 LÍNEAS):
+        // AGREGAR ESTO (6 LÍNEAS):
         const btnGuardarEdicion = document.getElementById('btnGuardarEdicion');
         if (btnGuardarEdicion) {
             btnGuardarEdicion.onclick = async function() {
                 await guardarEdicion();
             };
-            console.log('✅ Event listener de edición configurado');
+            console.log(' Event listener de edición configurado');
         }
         
         console.timeEnd('⏱️ Tiempo de carga total');
-        console.log('✅ Sistema iniciado correctamente');
+        console.log(' Sistema iniciado correctamente');
     } catch (error) {
-        console.error('❌ Error en inicialización:', error);
+        console.error(' Error en inicialización:', error);
         alert('Error al iniciar el sistema. Recargue la página.');
     }
     

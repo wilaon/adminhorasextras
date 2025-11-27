@@ -160,7 +160,7 @@ async function inicializar() {
         
         console.log('Sistema iniciado');
     }catch{
-        console.error('❌ Error en inicialización:', error);
+        console.error(' Error en inicialización:', error);
         alert('Error al iniciar el sistema. Por favor recargue la página.');
     }
    
