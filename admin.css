@@ -1,41 +1,38 @@
-/* ==================== */
-/* ESTRUCTURA GENERAL   */
-/* ==================== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/*ESTRUCTURA GENERAL   /
+/ ==================== */
 
-html, body {
+
+html,
+body {
+  overflow: hidden;
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #FAF7F2;
   color: #333;
 }
 
-/* ==================== */
-/* CONTENEDOR PRINCIPAL */
-/* ==================== */
+/* ==================== /
+/ CONTENEDOR PRINCIPAL /
+/ ==================== */
 .admin-container {
+  max-height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  padding: 20px;
-  gap: 15px;
+  padding: 15px;
+  gap: 5px;
 }
 
-/* ==================== */
-/* HEADER               */
-/* ==================== */
+/* ==================== /
+/ HEADER               /
+/ ==================== */
 .admin-header {
   background-color: #161C2E;
   color: #fff;
   padding: 15px;
   text-align: center;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -46,18 +43,18 @@ html, body {
   font-weight: 600;
 }
 
-/* ==================== */
-/* BOTONES Y FILTROS    */
-/* ==================== */
+/* ==================== /
+/ BOTONES Y FILTROS    /
+/ ==================== */
 .filters-section {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
   background: #fff;
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .filter-group {
@@ -85,9 +82,9 @@ html, body {
   margin-left: auto;
 }
 
-/* ==================== */
-/* BOTONES ESTÁNDAR     */
-/* ==================== */
+/* ==================== /
+/ BOTONES ESTÁNDAR     /
+/ ==================== */
 .btn {
   padding: 8px 14px;
   border: none;
@@ -97,18 +94,33 @@ html, body {
   transition: 0.2s;
 }
 
-.btn-primary { background: #2BB3C0; color: white; }
-.btn-secondary { background: #6c757d; color: white; }
-.btn-success { background: #28a745; color: white; }
-.btn-danger { background: #dc3545; color: white; }
+.btn-primary {
+  background: #2BB3C0;
+  color: white;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
 
 .btn:hover {
   opacity: 0.9;
 }
 
-/* ==================== */
-/* BOTONES DE ACCIONES  */
-/* ==================== */
+/* ==================== /
+/ BOTONES DE ACCIONES  /
+/ ==================== */
 .btn-edit,
 .btn-delete,
 .btn-approve,
@@ -126,7 +138,7 @@ html, body {
 .btn-edit {
   background: white;
   color: #EF6C35;
-  border-color: #EF6C35;
+  border: 1px solid #EF6C35;
 }
 
 .btn-edit:hover {
@@ -138,7 +150,7 @@ html, body {
 .btn-delete {
   background: white;
   color: #999;
-  border-color: #ddd;
+  border: 1px solid #ddd;
 }
 
 .btn-delete:hover {
@@ -149,7 +161,7 @@ html, body {
 .btn-approve {
   background: white;
   color: #28a745;
-  border-color: #28a745;
+  border: 1px solid #28a745;
   font-weight: bold;
 }
 
@@ -162,7 +174,7 @@ html, body {
 .btn-reject {
   background: white;
   color: #dc3545;
-  border-color: #dc3545;
+  border: 1px solid #dc3545;
   font-weight: bold;
 }
 
@@ -194,17 +206,19 @@ html, body {
   border: 1px solid #f5c6cb;
 }
 
-/* ==================== */
-/* TABLA PRINCIPAL      */
-/* ==================== */
+/* ==================== /
+/ TABLA PRINCIPAL      /
+/ ==================== */
 .table-container {
   flex: 1;
-  overflow-x: auto;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
   border-radius: 8px;
   background: white;
   border: 1px solid #E0E0E0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 table {
@@ -212,18 +226,16 @@ table {
   border-collapse: separate;
   border-spacing: 0;
   table-layout: auto;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 thead {
-  position: sticky;
-  top: 0;
   background: #161C2E;
   color: white;
-  z-index: 2;
 }
 
-th, td {
+th,
+td {
   padding: 8px 10px;
   border-bottom: 1px solid #e9ecef;
   text-align: left;
@@ -240,47 +252,38 @@ tbody tr:hover {
 }
 
 /* Anchos específicos */
-th:nth-child(3), td:nth-child(3) { min-width: 120px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-th:nth-child(4), td:nth-child(4) { min-width: 100px; text-align: center; }
-th:nth-child(9), td:nth-child(9) { min-width: 200px; max-width: 250px; }
-
-/* ==================== */
-/* PAGINACIÓN           */
-/* ==================== */
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 10px 15px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+th:nth-child(3),
+td:nth-child(3) {
+  min-width: 120px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.pagination-controls button {
-  margin: 0 4px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 1px solid #E0E0E0;
-  background: #f8f9fa;
-  cursor: pointer;
+th:nth-child(4),
+td:nth-child(4) {
+  min-width: 100px;
+  text-align: center;
 }
 
-.pagination-controls button:hover {
-  background: #e2e6ea;
+th:nth-child(9),
+td:nth-child(9) {
+  min-width: 200px;
+  max-width: 250px;
 }
 
-/* ==================== */
-/* MODALES              */
-/* ==================== */
+/* ==================== /
+/ MODALES              /
+/ ==================== */
 .modal {
   display: none;
   position: fixed;
   z-index: 1000;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.45);
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
   justify-content: center;
   align-items: center;
@@ -306,7 +309,8 @@ th:nth-child(9), td:nth-child(9) { min-width: 200px; max-width: 250px; }
   align-items: center;
 }
 
-.modal-header h1, .modal-header h2 {
+.modal-header h1,
+.modal-header h2 {
   font-size: 18px;
 }
 
@@ -330,9 +334,9 @@ th:nth-child(9), td:nth-child(9) { min-width: 200px; max-width: 250px; }
   color: white;
 }
 
-/* ==================== */
-/* FORMULARIOS          */
-/* ==================== */
+/* ==================== /
+/ FORMULARIOS          /
+/ ==================== */
 .form-container {
   display: flex;
   flex-direction: column;
@@ -359,9 +363,9 @@ th:nth-child(9), td:nth-child(9) { min-width: 200px; max-width: 250px; }
   font-size: 13px;
 }
 
-/* ==================== */
-/* MENSAJES Y LOADING   */
-/* ==================== */
+/* ==================== /
+/ MENSAJES Y LOADING   /
+/ ==================== */
 .message {
   text-align: center;
   font-weight: 600;
@@ -371,9 +375,11 @@ th:nth-child(9), td:nth-child(9) { min-width: 200px; max-width: 250px; }
   display: none;
   position: fixed;
   z-index: 2000;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(255,255,255,0.8);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
   justify-content: center;
   align-items: center;
 }
@@ -388,12 +394,14 @@ th:nth-child(9), td:nth-child(9) { min-width: 200px; max-width: 250px; }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* ==================== */
-/* RESPONSIVE           */
-/* ==================== */
+/* ==================== /
+/ RESPONSIVE           /
+/ ==================== */
 @media (max-width: 768px) {
   .filters-section {
     flex-direction: column;
@@ -410,155 +418,186 @@ th:nth-child(9), td:nth-child(9) { min-width: 200px; max-width: 250px; }
     max-height: 95vh;
   }
 
-  table th, table td {
+  table th,
+  table td {
     padding: 6px 8px;
     font-size: 12px;
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ESTILOS DATATABLES
-   ═══════════════════════════════════════════════════════════ */
-
-/* Contenedor principal de DataTables */
+/* ══════════════════════════════════════════════════════════
+ESTILOS DATATABLES - SCROLL CORREGIDO
+══════════════════════════════════════════════════════════ */
 .dataTables_wrapper {
-    padding: 0;
-    font-size: 13px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  font-size: 13px;
+}
+
+/* ESTILO HOVER para resaltar la fila al pasar el cursor */
+table.dataTable tbody tr:hover {
+    background-color: #e0f7fa !important; /* Un color suave y atractivo (Celeste muy claro) */
+    transform: scale(1.005); /* Ligerísimo zoom para destacar */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Barra superior */
 .dataTables_wrapper .top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    background: #FAF7F2;
-    border-bottom: 1px solid #E0E0E0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 15px;
+  background: #FAF7F2;
+  border-bottom: 1px solid #E0E0E0;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 /* Selector de cantidad de registros */
-.dataTables_wrapper .dataTables_length { 
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: 12px;
+.dataTables_wrapper .dataTables_length {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .dataTables_wrapper .dataTables_length select {
-    padding: 5px 30px 5px 10px;
-    border: 1px solid #E0E0E0;
-    border-radius: 4px;
+  padding: 5px 30px 5px 10px;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
 }
 
 /* Botones de exportación */
 .dt-buttons {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .dt-button {
-    padding: 6px 12px !important;
-    border-radius: 4px !important;
-    border: none !important;
-    cursor: pointer !important;
-    font-size: 13px !important;
-    background: #28a745 !important;
-    color: white !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  background: #28a745 !important;
+  color: white !important;
 }
 
 /* Input de búsqueda */
 .dataTables_wrapper .dataTables_filter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .dataTables_wrapper .dataTables_filter input {
-    padding: 6px 12px;
-    border: 1px solid #E0E0E0;
-    border-radius: 4px;
-    width: 250px;
+  padding: 6px 12px;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
+  width: 250px;
+}
+
+/* ✅ ÁREA DE SCROLL - UNA SOLA BARRA */
+.dataTables_scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dataTables_scrollHead {
+  overflow: hidden !important;
+  border-bottom: 2px solid #161C2E;
+}
+
+.dataTables_scrollBody {
+  flex: 1;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  border: none !important;
+
 }
 
 /* Información de registros */
 .dataTables_wrapper .dataTables_info {
-    padding: 10px 15px;
-    color: #666;
-    font-size: 13px;
+  padding: 10px 15px;
+  color: #666;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 /* Paginación */
 .dataTables_wrapper .dataTables_paginate {
-    padding: 10px 15px;
+  padding: 10px 15px;
+  flex-shrink: 0;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 5px 10px;
-    margin: 0 2px;
-    border: 1px solid #E0E0E0;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-    color: #333 !important;
+  padding: 5px 10px;
+  margin: 0 2px;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  color: #333 !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-    background: #e9ecef;
-    border-color: #2BB3C0;
+  background: #e9ecef;
+  border-color: #2BB3C0;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: #2BB3C0 !important;
-    color: white !important;
-    border-color: #2BB3C0;
+  background: #2BB3C0 !important;
+  color: white !important;
+  border-color: #2BB3C0;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Encabezados con indicadores de ordenamiento */
 table.dataTable thead th.sorting,
 table.dataTable thead th.sorting_asc,
 table.dataTable thead th.sorting_desc {
-    cursor: pointer;
-    position: relative;
-    padding-right: 25px !important;
+  cursor: pointer;
+  position: relative;
+  padding-right: 25px !important;
 }
 
 table.dataTable thead th.sorting:after {
-    content: "⇅";
-    position: absolute;
-    right: 8px;
-    opacity: 0.3;
+  content: "⇅";
+  position: absolute;
+  right: 8px;
+  opacity: 0.3;
 }
 
 table.dataTable thead th.sorting_asc:after {
-    content: "↑";
-    position: absolute;
-    right: 8px;
-    opacity: 1;
+  content: "↑";
+  position: absolute;
+  right: 8px;
+  opacity: 1;
 }
 
 table.dataTable thead th.sorting_desc:after {
-    content: "↓";
-    position: absolute;
-    right: 8px;
-    opacity: 1;
-}
-
-/* Scroll horizontal */
-.dataTables_scrollBody {
-    border: none !important;
+  content: "↓";
+  position: absolute;
+  right: 8px;
+  opacity: 1;
 }
 
 /* Centrar columnas específicas */
 .dt-center {
-    text-align: center !important;
+  text-align: center !important;
 }
 
-/* Columna Observaciones con ancho fijo */
+/* Columna Observaciones */
 table th:nth-child(9),
 table td:nth-child(9) {
   max-width: 250px;
@@ -568,7 +607,6 @@ table td:nth-child(9) {
   white-space: nowrap;
 }
 
-/* Hover para ver texto completo */
 table td:nth-child(9):hover {
   overflow: visible;
   white-space: normal;
@@ -576,38 +614,18 @@ table td:nth-child(9):hover {
   position: relative;
   z-index: 100;
   background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   padding: 12px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .dataTables_wrapper .top {
-        flex-direction: column;
-        gap: 10px;
-        align-items: stretch;
-    }
-    
-    .dataTables_wrapper .dataTables_filter input {
-        width: 100%;
-    }
+  .dataTables_wrapper .top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dataTables_wrapper .dataTables_filter input {
+    width: 100%;
+  }
 }
-
-/* Contenedor superior alineado */
-.dataTables_wrapper .top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-/* Botón Exportar y selector de registros juntos */
-.dataTables_wrapper .dt-buttons,
-.dataTables_wrapper .dataTables_length {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-
