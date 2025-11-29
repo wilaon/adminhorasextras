@@ -1,631 +1,1089 @@
-/*ESTRUCTURA GENERAL   /
-/ ==================== */
+/* ================================================
+   CSS OPTIMIZADO PARA DATATABLES
+   Sistema de Control de Horas Extras
+   ================================================ */
 
-
-html,
-body {
-  overflow: hidden;
-  height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #FAF7F2;
-  color: #333;
+/* ================================================
+   1. RESET Y ESTRUCTURA BASE
+   ================================================ */
+* {
+    box-sizing: border-box;
 }
 
-/* ==================== /
-/ CONTENEDOR PRINCIPAL /
-/ ==================== */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #FAF7F2;
+    color: #333;
+    overflow: hidden;
+}
+
+/* ================================================
+   2. CONTENEDOR PRINCIPAL
+   ================================================ */
 .admin-container {
-  max-height: 100vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
-  gap: 5px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    gap: 10px;
 }
 
-/* ==================== /
-/ HEADER               /
-/ ==================== */
+/* ================================================
+   3. HEADER
+   ================================================ */
 .admin-header {
-  background-color: #161C2E;
-  color: #fff;
-  padding: 15px;
-  text-align: center;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    background-color: #161C2E;
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 60px;
 }
 
 .admin-header h1 {
-  font-size: 22px;
-  font-weight: 600;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
 }
 
-/* ==================== /
-/ BOTONES Y FILTROS    /
-/ ==================== */
+/* ================================================
+   4. AREA DE CONTROLES Y FILTROS
+   ================================================ */
+.controls-area {
+    flex-shrink: 0;
+}
+
 .filters-section {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  background: #fff;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    background: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-top: 10px;
 }
 
 .filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .filters-section label {
-  font-size: 13px;
-  color: #161C2E;
+    font-size: 13px;
+    color: #161C2E;
+    font-weight: 500;
 }
 
 .filters-section input,
 .filters-section select {
-  padding: 6px 8px;
-  border: 1px solid #E0E0E0;
-  border-radius: 4px;
+    padding: 6px 10px;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px;
+    font-size: 13px;
 }
 
-.controls-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
+.filters-section input:focus,
+.filters-section select:focus {
+    outline: none;
+    border-color: #2BB3C0;
+    box-shadow: 0 0 0 2px rgba(43,179,192,0.1);
 }
 
-/* ==================== /
-/ BOTONES ESTÁNDAR     /
-/ ==================== */
+/* ================================================
+   5. CONTENEDOR DE TABLA (DataTables)
+   ================================================ */
+.table-container {
+    flex: 1;
+    min-height: 0;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #E0E0E0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ================================================
+   6. DATATABLES WRAPPER
+   ================================================ */
+.dataTables_wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    font-family: inherit;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    font-size: 13px;
+}
+
+/* ================================================
+   7. CONTROLES SUPERIORES (Búsqueda, Length, Buttons)
+   ================================================ */
+.dataTables_wrapper .top {
+    padding: 10px 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Selector de registros por página */
+.dataTables_wrapper .dataTables_length {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dataTables_wrapper .dataTables_length label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    padding: 5px 10px;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+/* Campo de búsqueda */
+.dataTables_wrapper .dataTables_filter {
+    display: flex;
+    align-items: center;
+}
+
+.dataTables_wrapper .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    padding: 6px 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px;
+    width: 200px;
+    transition: all 0.3s;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    outline: none;
+    border-color: #2BB3C0;
+    box-shadow: 0 0 0 2px rgba(43,179,192,0.1);
+    width: 250px;
+}
+
+/* Botones de exportación */
+.dt-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.dt-button {
+    padding: 6px 12px !important;
+    background: #28a745 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+
+.dt-button:hover {
+    background: #218838 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* ================================================
+   8. AREA DE SCROLL (Tabla principal)
+   ================================================ */
+.dataTables_scroll {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #E0E0E0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* Header de la tabla (thead fijo) */
+.dataTables_scrollHead {
+    background: #161C2E;
+    overflow: hidden !important;
+    flex-shrink: 0;
+}
+
+.dataTables_scrollHead table {
+    margin-bottom: 0 !important;
+}
+
+/* Body de la tabla (con scroll) */
+.dataTables_scrollBody {
+    flex: 1;
+    overflow: auto !important;
+}
+
+.dataTables_scrollBody::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.dataTables_scrollBody::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+.dataTables_scrollBody::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* ================================================
+   9. ESTILOS DE TABLA
+   ================================================ */
+table.dataTable {
+    width: 100% !important;
+    margin: 0 !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+/* Encabezados */
+table.dataTable thead th {
+    padding: 12px 10px;
+    background: #161C2E !important;
+    color: white !important;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 2px solid #161C2E;
+    white-space: nowrap;
+    position: relative;
+}
+
+/* Celdas del body */
+table.dataTable tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+/* Filas alternadas */
+table.dataTable tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Hover en filas */
+table.dataTable tbody tr:hover {
+    background-color: #e3f2fd !important;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* Fila seleccionada */
+table.dataTable tbody tr.selected {
+    background-color: #bbdefb !important;
+}
+
+
+
+/* ================================================
+   10. ORDENAMIENTO DE COLUMNAS
+   ================================================ */
+table.dataTable thead .sorting,
+table.dataTable thead .sorting_asc,
+table.dataTable thead .sorting_desc {
+    cursor: pointer;
+    padding-right: 25px !important;
+}
+
+table.dataTable thead .sorting::after,
+table.dataTable thead .sorting_asc::after,
+table.dataTable thead .sorting_desc::after {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+table.dataTable thead .sorting::after {
+    content: "↕";
+    opacity: 0.3;
+}
+
+table.dataTable thead .sorting_asc::after {
+    content: "↑";
+    color: #4CAF50;
+}
+
+table.dataTable thead .sorting_desc::after {
+    content: "↓";
+    color: #f44336;
+}
+
+/* ================================================
+   11. AREA INFERIOR (Info y Paginación)
+   ================================================ */
+.dataTables_wrapper .bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    margin-top: 10px;
+    border-top: 1px solid #E0E0E0;
+    background: #f8f9fa;
+    border-radius: 0 0 6px 6px;
+    flex-shrink: 0;
+    min-height: 50px;
+}
+
+/* Información de registros */
+.dataTables_info {
+    padding: 0 10px;
+    color: #666;
+    font-size: 13px;
+}
+
+/* Paginación */
+.dataTables_paginate {
+    display: flex;
+    gap: 4px;
+    padding: 0 10px;
+}
+
+.paginate_button {
+    padding: 5px 12px;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.paginate_button:hover:not(.disabled):not(.current) {
+    background: #e9ecef;
+    border-color: #2BB3C0;
+    transform: translateY(-1px);
+}
+
+.paginate_button.current {
+    background: #2BB3C0 !important;
+    color: white !important;
+    border-color: #2BB3C0 !important;
+    font-weight: 600;
+}
+
+.paginate_button.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ================================================
+   12. COLUMNAS ESPECÍFICAS
+   ================================================ */
+/* Centrar columnas numéricas */
+.dt-center,
+td.dt-center { 
+    text-align: center !important;
+}
+
+/* Columna de observaciones con tooltip */
+table.dataTable td:nth-child(9) {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;
+}
+
+table.dataTable td:nth-child(9):hover {
+    overflow: visible;
+    white-space: normal;
+    word-wrap: break-word;
+    z-index: 100;
+}
+
+/* Columna de acciones */
+table.dataTable td:last-child {
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ================================================
+   13. BOTONES GENERALES
+   ================================================ */
 .btn {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: 0.2s;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+    text-decoration: none;
 }
 
 .btn-primary {
-  background: #2BB3C0;
-  color: white;
+    background: #2BB3C0;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #239ba7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(43,179,192,0.3);
 }
 
 .btn-secondary {
-  background: #6c757d;
-  color: white;
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
 }
 
 .btn-success {
-  background: #28a745;
-  color: white;
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+    transform: translateY(-1px);
 }
 
 .btn-danger {
-  background: #dc3545;
-  color: white;
+    background: #dc3545;
+    color: white;
 }
 
-.btn:hover {
-  opacity: 0.9;
+.btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-1px);
 }
 
-/* ==================== /
-/ BOTONES DE ACCIONES  /
-/ ==================== */
+/* ================================================
+   14. BOTONES DE ACCIONES EN TABLA
+   ================================================ */
 .btn-edit,
 .btn-delete,
 .btn-approve,
 .btn-reject {
-  padding: 4px 8px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  margin: 0 2px;
-  display: inline-block;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    margin: 0 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
 }
 
 .btn-edit {
-  background: white;
-  color: #EF6C35;
-  border: 1px solid #EF6C35;
+    background: white;
+    color: #EF6C35;
+    border-color: #EF6C35;
 }
 
 .btn-edit:hover {
-  background: #EF6C35;
-  color: white;
-  transform: scale(1.05);
+    background: #EF6C35;
+    color: white;
+    transform: scale(1.05);
 }
 
 .btn-delete {
-  background: white;
-  color: #999;
-  border: 1px solid #ddd;
+    background: white;
+    color: #dc3545;
+    border-color: #dc3545;
 }
 
 .btn-delete:hover {
-  background: #f5f5f5;
-  transform: scale(1.05);
+    background: #dc3545;
+    color: white;
+    transform: scale(1.05);
 }
 
 .btn-approve {
-  background: white;
-  color: #28a745;
-  border: 1px solid #28a745;
-  font-weight: bold;
+    background: white;
+    color: #28a745;
+    border-color: #28a745;
 }
 
 .btn-approve:hover {
-  background: #28a745;
-  color: white;
-  transform: scale(1.05);
+    background: #28a745;
+    color: white;
+    transform: scale(1.05);
 }
 
 .btn-reject {
-  background: white;
-  color: #dc3545;
-  border: 1px solid #dc3545;
-  font-weight: bold;
+    background: white;
+    color: #ffc107;
+    border-color: #ffc107;
 }
 
 .btn-reject:hover {
-  background: #dc3545;
-  color: white;
-  transform: scale(1.05);
+    background: #ffc107;
+    color: white;
+    transform: scale(1.05);
 }
 
-/* Badges de estado */
+/* ================================================
+   15. BADGES DE ESTADO
+   ================================================ */
 .badge {
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-block;
-  margin-right: 8px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+    text-transform: uppercase;
 }
 
 .badge-success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
 }
 
 .badge-danger {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 
-/* ==================== /
-/ TABLA PRINCIPAL      /
-/ ==================== */
-.table-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-  border-radius: 8px;
-  background: white;
-  border: 1px solid #E0E0E0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
 }
 
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  table-layout: auto;
-  font-size: 12px;
-}
-
-thead {
-  background: #161C2E;
-  color: white;
-}
-
-th,
-td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #e9ecef;
-  text-align: left;
-  white-space: nowrap;
-}
-
-th {
-  cursor: pointer;
-  font-weight: 600;
-}
-
-tbody tr:hover {
-  background-color: #f1f3f9;
-}
-
-/* Anchos específicos */
-th:nth-child(3),
-td:nth-child(3) {
-  min-width: 120px;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-th:nth-child(4),
-td:nth-child(4) {
-  min-width: 100px;
-  text-align: center;
-}
-
-th:nth-child(9),
-td:nth-child(9) {
-  min-width: 200px;
-  max-width: 250px;
-}
-
-/* ==================== /
-/ MODALES              /
-/ ==================== */
+/* ================================================
+   16. MODALES
+   ================================================ */
 .modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(3px);
-  justify-content: center;
-  align-items: center;
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-content {
-  background: #fff;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+    background: #fff;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .modal-header {
-  background: #161C2E;
-  color: white;
-  padding: 10px 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    background: #161C2E;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .modal-header h1,
 .modal-header h2 {
-  font-size: 18px;
+    font-size: 18px;
+    margin: 0;
 }
 
 .modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
 }
 
 .modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 10px 15px;
-  border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 10px 10px;
 }
 
 .close {
-  cursor: pointer;
-  font-size: 22px;
-  color: white;
+    cursor: pointer;
+    font-size: 24px;
+    color: white;
+    line-height: 1;
+    transition: transform 0.2s;
 }
 
-/* ==================== /
-/ FORMULARIOS          /
-/ ==================== */
+.close:hover {
+    transform: rotate(90deg);
+}
+
+/* ================================================
+   17. FORMULARIOS
+   ================================================ */
 .form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .form-group label {
-  font-size: 13px;
-  font-weight: 600;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 8px;
-  border: 1px solid #E0E0E0;
-  border-radius: 4px;
-  font-size: 13px;
+    padding: 8px 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.3s;
 }
 
-/* ==================== /
-/ MENSAJES Y LOADING   /
-/ ==================== */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #2BB3C0;
+    box-shadow: 0 0 0 3px rgba(43,179,192,0.1);
+}
+
+/* ================================================
+   18. MENSAJES Y ALERTAS
+   ================================================ */
 .message {
-  text-align: center;
-  font-weight: 600;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* ================================================
+   19. LOADING OVERLAY
+   ================================================ */
 .loading-overlay {
-  display: none;
-  position: fixed;
-  z-index: 2000;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  justify-content: center;
-  align-items: center;
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    justify-content: center;
+    align-items: center;
 }
 
 .loading-spinner {
-  width: 45px;
-  height: 45px;
-  border: 5px solid #E0E0E0;
-  border-top: 5px solid #2BB3C0;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+    width: 50px;
+    height: 50px;
+    border: 4px solid #E0E0E0;
+    border-top: 4px solid #2BB3C0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-/* ==================== /
-/ RESPONSIVE           /
-/ ==================== */
+/* ================================================
+   20. UTILIDADES
+   ================================================ */
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-left { text-align: left !important; }
+
+.mt-1 { margin-top: 5px !important; }
+.mt-2 { margin-top: 10px !important; }
+.mt-3 { margin-top: 15px !important; }
+.mb-1 { margin-bottom: 5px !important; }
+.mb-2 { margin-bottom: 10px !important; }
+.mb-3 { margin-bottom: 15px !important; }
+
+.hidden { display: none !important; }
+.visible { display: block !important; }
+
+/* Limpiar floats */
+.clear::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* ================================================
+   21. RESPONSIVE
+   ================================================ */
 @media (max-width: 768px) {
-  .filters-section {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .controls-right {
-    margin-left: 0;
-    justify-content: space-between;
-  }
-
-  .modal-content {
-    width: 95%;
-    max-height: 95vh;
-  }
-
-  table th,
-  table td {
-    padding: 6px 8px;
-    font-size: 12px;
-  }
+    .admin-container {
+        padding: 10px;
+    }
+    
+    .admin-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .filters-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .dataTables_wrapper .top {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        width: 100%;
+    }
+    
+    .dataTables_wrapper .bottom {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .dataTables_paginate {
+        justify-content: center;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    /* Reducir padding en móviles */
+    table.dataTable thead th,
+    table.dataTable tbody td {
+        padding: 8px 5px;
+        font-size: 12px;
+    }
+    
+    /* Botones más pequeños en móviles */
+    .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
 }
 
-/* ══════════════════════════════════════════════════════════
-ESTILOS DATATABLES - SCROLL CORREGIDO
-══════════════════════════════════════════════════════════ */
-.dataTables_wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-  padding: 0;
-  font-size: 13px;
+@media (max-width: 480px) {
+    /* Ocultar algunas columnas en móviles muy pequeños */
+    table.dataTable th:nth-child(8),
+    table.dataTable td:nth-child(8),
+    table.dataTable th:nth-child(9),
+    table.dataTable td:nth-child(9) {
+        display: none;
+    }
 }
 
-/* ESTILO HOVER para resaltar la fila al pasar el cursor */
-table.dataTable tbody tr:hover {
-    background-color: #e0f7fa !important; /* Un color suave y atractivo (Celeste muy claro) */
-    transform: scale(1.005); /* Ligerísimo zoom para destacar */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+/* ================================================
+   22. PRINT STYLES
+   ================================================ */
+@media print {
+    .admin-header,
+    .filters-section,
+    .dataTables_length,
+    .dataTables_filter,
+    .dataTables_info,
+    .dataTables_paginate,
+    .dt-buttons,
+    .btn,
+    .modal {
+        display: none !important;
+    }
+    
+    .admin-container {
+        padding: 0;
+    }
+    
+    .table-container {
+        border: none;
+        box-shadow: none;
+    }
+    
+    table.dataTable {
+        font-size: 10pt;
+    }
+    
+    table.dataTable thead th {
+        background: white !important;
+        color: black !important;
+        border-bottom: 2px solid black;
+    }
 }
 
-/* Barra superior */
-.dataTables_wrapper .top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px 15px;
-  background: #FAF7F2;
-  border-bottom: 1px solid #E0E0E0;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  gap: 10px;
+/* ================================================
+   23. AJUSTES FINALES PARA COMPATIBILIDAD
+   ================================================ */
+
+/* Fix para alineación correcta con DataTables */
+.dataTables_scrollHeadInner {
+    width: 100% !important;
 }
 
-/* Selector de cantidad de registros */
-.dataTables_wrapper .dataTables_length {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.dataTables_scrollHeadInner table {
+    width: 100% !important;
 }
 
-.dataTables_wrapper .dataTables_length select {
-  padding: 5px 30px 5px 10px;
-  border: 1px solid #E0E0E0;
-  border-radius: 4px;
+/* Asegurar que el footer del DataTable siempre sea visible */
+.dataTables_wrapper .dataTables_scroll {
+    clear: both;
 }
 
-/* Botones de exportación */
-.dt-buttons {
-  display: flex;
-  gap: 10px;
+/* Fix para columnas con ancho fijo */
+table.dataTable th.min-w-100 { min-width: 100px; }
+table.dataTable th.min-w-150 { min-width: 150px; }
+table.dataTable th.min-w-200 { min-width: 200px; }
+
+/* Estados de filas */
+table.dataTable tbody tr.estado-pendiente {
+    background-color: #fff3cd !important;
 }
 
-.dt-button {
-  padding: 6px 12px !important;
-  border-radius: 4px !important;
-  border: none !important;
-  cursor: pointer !important;
-  font-size: 13px !important;
-  background: #28a745 !important;
-  color: white !important;
+table.dataTable tbody tr.estado-aprobado {
+    background-color: #d4edda !important;
 }
 
-/* Input de búsqueda */
-.dataTables_wrapper .dataTables_filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+table.dataTable tbody tr.estado-rechazado {
+    background-color: #f8d7da !important;
 }
 
-.dataTables_wrapper .dataTables_filter input {
-  padding: 6px 12px;
-  border: 1px solid #E0E0E0;
-  border-radius: 4px;
-  width: 250px;
-}
-
-/* ✅ ÁREA DE SCROLL - UNA SOLA BARRA */
-.dataTables_scroll {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.dataTables_scrollHead {
-  overflow: hidden !important;
-  border-bottom: 2px solid #161C2E;
-}
-
+/* Fix final para altura dinámica */
 .dataTables_scrollBody {
-  flex: 1;
-  overflow-y: auto !important;
-  overflow-x: auto !important;
-  border: none !important;
-
+    max-height: calc(100vh - 380px) !important;
 }
 
-/* Información de registros */
-.dataTables_wrapper .dataTables_info {
-  padding: 10px 15px;
-  color: #666;
-  font-size: 12px;
-  flex-shrink: 0;
+/* Anchos específicos para columnas problemáticas */
+table.dataTable th:nth-child(1), /* Fecha */
+table.dataTable td:nth-child(1) {
+    min-width: 80px !important;
+    width: 80px !important;
+    max-width: 80px !important;
+    white-space: nowrap;
 }
 
-/* Paginación */
-.dataTables_wrapper .dataTables_paginate {
-  padding: 10px 15px;
-  flex-shrink: 0;
+table.dataTable th:nth-child(2), /* DNI */
+table.dataTable td:nth-child(2) {
+    min-width: 90px !important;
+    width: 90px !important;
+    max-width: 90px !important;
+    white-space: nowrap;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-  padding: 5px 10px;
-  margin: 0 2px;
-  border: 1px solid #E0E0E0;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  color: #333 !important;
+table.dataTable th:nth-child(3), /* Nombre */
+table.dataTable td:nth-child(3) {
+    min-width: 180px !important;
+    width: 180px !important;
+    max-width: 180px !important;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-  background: #e9ecef;
-  border-color: #2BB3C0;
+table.dataTable th:nth-child(4), /* Turno */
+table.dataTable td:nth-child(4) {
+    min-width: 90px !important;
+    width: 90px !important;
+    max-width: 90px !important;
+    white-space: nowrap;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-  background: #2BB3C0 !important;
-  color: white !important;
-  border-color: #2BB3C0;
+/* Ajustes adicionales para todas las columnas */
+/* Aplicar fuente de 11px a toda la tabla */
+table.dataTable thead th,
+table.dataTable tbody td {
+    font-size: 11px !important;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* Fecha - columna muy angosta */
+table.dataTable th:nth-child(1),
+table.dataTable td:nth-child(1) {
+    padding: 8px 4px !important;
+    text-align: center !important;
+    font-weight: bold !important;
 }
 
-/* Encabezados con indicadores de ordenamiento */
-table.dataTable thead th.sorting,
-table.dataTable thead th.sorting_asc,
-table.dataTable thead th.sorting_desc {
-  cursor: pointer;
-  position: relative;
-  padding-right: 25px !important;
+/* DNI - ajustar padding */
+table.dataTable th:nth-child(2),
+table.dataTable td:nth-child(2) {
+    padding: 8px 6px !important;
 }
 
-table.dataTable thead th.sorting:after {
-  content: "⇅";
-  position: absolute;
-  right: 8px;
-  opacity: 0.3;
+/* Turno - ajustar padding */
+table.dataTable th:nth-child(4),
+table.dataTable td:nth-child(4) {
+    padding: 8px 6px !important;
+    text-align: center !important;
+    font-weight: bold !important;
 }
 
-table.dataTable thead th.sorting_asc:after {
-  content: "↑";
-  position: absolute;
-  right: 8px;
-  opacity: 1;
+/* Asegurar que el overflow esté oculto para evitar desbordamientos */
+table.dataTable td {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-table.dataTable thead th.sorting_desc:after {
-  content: "↓";
-  position: absolute;
-  right: 8px;
-  opacity: 1;
+/* Ajuste para alinear el selector de registros con el botón de exportar */
+.dataTables_wrapper .top {
+    padding: 10px 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap; /* Cambio: mantener en una línea */
+    gap: 15px;
 }
 
-/* Centrar columnas específicas */
-.dt-center {
-  text-align: center !important;
+/* Agrupar length y buttons juntos */
+.dataTables_wrapper .top > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-/* Columna Observaciones */
-table th:nth-child(9),
-table td:nth-child(9) {
-  max-width: 250px;
-  min-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* --- Estilos para agrupar controles (Mostrar Registros + Exportar) --- */
+.dataTables_wrapper .length-buttons-group {
+    display: flex;
+    align-items: center;
+    /* Aumentar el gap (espacio) para separarlos más */
+    gap: 30px; /* VALOR MODIFICADO: Aumentado de 15px a 30px */
 }
 
-table td:nth-child(9):hover {
-  overflow: visible;
-  white-space: normal;
-  word-wrap: break-word;
-  position: relative;
-  z-index: 100;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  padding: 12px;
-}
 
-/* Responsive */
+/* Ajustes responsive para mantener la alineación */
 @media (max-width: 768px) {
-  .dataTables_wrapper .top {
-    flex-direction: column;
-    align-items: stretch;
+    .dataTables_wrapper .top {
+        flex-wrap: wrap;
+    }
+    
+    .dataTables_wrapper .dataTables_filter {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 10px;
+    }
   }
+/* Ajuste para pantallas grandes */
+@media (min-height: 900px) {
+    .dataTables_scrollBody {
+        max-height: calc(100vh - 350px) !important;
+    }
+}
 
-  .dataTables_wrapper .dataTables_filter input {
-    width: 100%;
-  }
+/* Ajuste para pantallas pequeñas */
+@media (max-height: 700px) {
+    .dataTables_scrollBody {
+        max-height: calc(100vh - 400px) !important;
+    }
 }

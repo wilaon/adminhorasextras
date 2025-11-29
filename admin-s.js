@@ -268,69 +268,124 @@ function mostrarDatos() {
     tbody.appendChild(tr);
   });
 
-  // AGREGADO: Inicializar DataTables
-  tablaDataTable = $("#tablaAsistencias").DataTable({
+  tablaDataTable = $('#tablaAsistencias').DataTable({
     // Idioma en español
     language: {
-      search: "🔍 Buscar:",
-      lengthMenu: "Mostrar _MENU_ registros por página",
-      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-      infoEmpty: "Mostrando 0 a 0 de 0 registros",
-      infoFiltered: "(filtrado de _MAX_ registros totales)",
-      paginate: {
-        first: "Primero",
-        last: "Último",
-        next: "Siguiente",
-        previous: "Anterior",
-      },
-      zeroRecords: "No se encontraron registros",
-      emptyTable: "No hay datos disponibles",
+        search: "🔍 Buscar:",
+        lengthMenu: "Mostrar _MENU_ registros",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+        infoEmpty: "Mostrando 0 a 0 de 0 registros",
+        infoFiltered: "(filtrado de _MAX_ registros totales)",
+        paginate: {
+            first: "Primero",
+            last: "Último",
+            next: "Siguiente",
+            previous: "Anterior"
+        },
+        zeroRecords: "No se encontraron registros",
+        emptyTable: "No hay datos disponibles"
     },
+    
     // Paginación
     pageLength: 20,
-    lengthMenu: [
-      [10, 20, 40, 100, -1],
-      [10, 20, 40, 100, "Todos"],
-    ],
+    lengthMenu: [[10, 20, 40, 100, -1], [10, 20, 40, 100, "Todos"]],
+    
     // Ordenamiento por defecto (fecha descendente)
-    order: [[0, "desc"]],
+    order: [[0, 'desc']],
+    
     // Configuración de columnas
     columnDefs: [
-      {
-        targets: [14], // Columna de acciones
-        orderable: false,
-        searchable: false,
-      },
-      {
-        targets: [6, 9, 10, 11, 12, 13], // Columnas numéricas
-        className: "dt-center",
-      },
-    ],
-
-    // Botones de exportación
-    dom: '<"top d-flex justify-content-between align-items-center"<"d-flex align-items-center gap-3"B l>f>rt<"bottom"ip><"clear">',
-    buttons: [
-      {
-        extend: "excelHtml5",
-        text: "📊 Exportar a Excel",
-        className: "btn btn-success",
-        title: "Reporte_Horas_Extras",
-        exportOptions: {
-          columns: ":not(:last-child)", // Excluir columna de acciones
+        { 
+            targets: [14], // Columna de acciones
+            orderable: false,
+            searchable: false
         },
-      },
+        {
+            targets: [6, 9, 10, 11, 12, 13], // Columnas numéricas
+            className: 'dt-center'
+        }
     ],
-    fixedHeader: true,
-    autoWidth: false,
+    
+    // DOM SIMPLIFICADO - MUY IMPORTANTE
+    dom: '<"top" <"length-buttons-group"lB> f>rt<"bottom"ip><"clear">',
+    
+    // Botones de exportación
+    buttons: [
+        {
+            extend: 'excelHtml5',
+            text: '📊 Exportar a Excel',
+            className: 'btn-success',
+            title: 'Reporte_Horas_Extras',
+            exportOptions: {
+                columns: ':not(:last-child)' // Excluir columna de acciones
+            }
+        }
+    ],
+    
+    // CONFIGURACIÓN DE SCROLL CRÍTICA
     scrollX: true,
-    scrollY: 'calc(100vh - 350px)', //"60vh",
-    scrollCollapse: true,
+    scrollY: false, // CAMBIO IMPORTANTE: Desactivar scrollY fijo
+    scrollCollapse: false,
     paging: true,
-    // Mantener estado entre recargas
+    autoWidth: false,
+    
+    // Estado
     stateSave: true,
-    stateDuration: -1, // Guardar indefinidamente
-    responsive: false,
-  });
+    stateDuration: -1,
+    
+    // Callbacks importantes
+    drawCallback: function(settings) {
+        // Ajustar columnas después de dibujar
+        this.api().columns.adjust();
+        
+        // Calcular altura dinámica después del dibujo
+        ajustarAlturaTabla();
+    },
+    
+    initComplete: function() {
+        // Ajustar al completar la inicialización
+        this.api().columns.adjust().draw();
+        
+        // Configurar altura inicial
+        ajustarAlturaTabla();
+        
+        // Reajustar en resize de ventana
+        $(window).on('resize', function() {
+            ajustarAlturaTabla();
+        });
+        
+        console.log('✅ DataTable inicializada correctamente');
+    }
+});
+
+// FUNCIÓN AUXILIAR PARA AJUSTAR LA ALTURA
+function ajustarAlturaTabla() {
+    setTimeout(function() {
+        var containerHeight = $('.table-container').height();
+        var headerHeight = $('.dataTables_scrollHead').outerHeight() || 0;
+        var topHeight = $('.top').outerHeight() || 0;
+        var bottomHeight = $('.bottom').outerHeight() || 50; // Mínimo 50px para la parte inferior
+        
+        // Calcular altura disponible para el body
+        var availableHeight = containerHeight - headerHeight - topHeight - bottomHeight - 20; // 20px de margen
+        
+        // Aplicar solo si hay espacio disponible
+        if (availableHeight > 100) {
+            $('.dataTables_scrollBody').css('max-height', availableHeight + 'px');
+            $('.dataTables_scrollBody').css('height', availableHeight + 'px');
+        }
+        
+        // Asegurar que la parte inferior sea visible
+        $('.bottom').css('position', 'relative');
+        $('.bottom').css('z-index', '10');
+        
+        // Forzar el redibujado de DataTables
+        if (tablaDataTable) {
+            tablaDataTable.columns.adjust();
+        }
+    }, 100);
+}
+
 }
 
 // Aplicar filtros de fecha
@@ -480,7 +535,7 @@ async function guardarEdicion() {
     horaSalida: document.getElementById("editHoraSalida").value,
     turno: document.getElementById("editTurno").value,
     turnoIngeniero: document.getElementById("editTurnoIngeniero").value,
-    observaciones: document.getElementById("editObservaciones").value, // El campo grande
+    observaciones: document.getElementById("editObservaciones").value,
     estado: document.getElementById("editEstado").value,
   };
 
