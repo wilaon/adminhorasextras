@@ -49,7 +49,8 @@ async function cargarEmpleados(forzar = false) {
         
         if (data.success) {
             empleadosCache = data.empleados;
-            cacheTimestamp = ahora;
+            empleadosCacheTimestamp = ahora; // Corregido: usar empleadosCacheTimestamp
+     
 
             return empleadosCache;
         }
@@ -164,6 +165,7 @@ async function guardarAsistencia(datos) {
         // Preparar fila
         const fila = [
             new Date().toISOString(),
+
             datos.fecha,
             datos.dni,
             datos.nombre,
@@ -172,6 +174,8 @@ async function guardarAsistencia(datos) {
             datos.turno,
             datos.turnoIngeniero,
             datos.observaciones || '',
+            // Añadir el estado inicial si no lo tienes en el formulario
+            'Pendiente' 
         ];
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',
@@ -182,6 +186,7 @@ async function guardarAsistencia(datos) {
             body: JSON.stringify({
                 action: 'guardarAsistencia',
                 fila: fila
+
             })
         });
         
@@ -193,13 +198,21 @@ async function guardarAsistencia(datos) {
     }
 }
 
+// Actualiza un registro de asistencia 
 async function actualizarAsistencia(indiceFila, datos) {
     try {
-        const datosCompletos ={
+        // 1. Creamos el objeto completo tal como lo espera el Apps Script
+        const datosCompletos = {
             indiceFila: indiceFila,
-            datos: datos
-        } 
-        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?indiceFila=${indiceFila}&datos=${encodeURIComponent(JSON.stringify(datosCompletos))}&action=actualizarAsistenciaGET`);
+            datos: datos 
+        };
+        
+        // 2. Construimos la URL correctamente, usando el parámetro 'data'
+        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?data=${encodeURIComponent(JSON.stringify(datosCompletos))}&action=actualizarAsistenciaGET`;
+
+        // 3. Realizamos la solicitud fetch DIRECTAMENTE con la URL
+        const response = await fetch(url);
+        
         const data = await response.json();
         return data;
     } catch (error) {

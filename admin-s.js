@@ -552,16 +552,13 @@ async function guardarEdicion() {
 
   document.getElementById("loadingOverlay").style.display = "flex";
 
-  try {
+ try {
     console.log(" Actualizando vía GET Intermediario...");
 
-    // 2. Codificar el payload completo en la URL
-    // El tamaño de la URL será grande, pero Apps Script lo soporta.
     const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=${
       datosParaEnvio.action
     }&data=${encodeURIComponent(JSON.stringify(datosParaEnvio))}`;
 
-    // 3. Usar fetch con el método GET (por defecto)
     const response = await fetch(url);
 
     const resultado = await response.json();
