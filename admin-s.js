@@ -1216,7 +1216,6 @@ window.onload = async function () {
       llenarSelectIngenieros(document.getElementById("editTurnoIngeniero")),
     ]);
 
-    // AGREGAR ESTO (6 LÍNEAS):
     const btnGuardarEdicion = document.getElementById("btnGuardarEdicion");
     if (btnGuardarEdicion) {
       btnGuardarEdicion.onclick = async function () {
@@ -1225,7 +1224,6 @@ window.onload = async function () {
       console.log(" Event listener de edición configurado");
     }
 
-    console.timeEnd("⏱️ Tiempo de carga total");
     console.log(" Sistema iniciado correctamente");
   } catch (error) {
     console.error(" Error en inicialización:", error);
