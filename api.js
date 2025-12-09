@@ -195,7 +195,11 @@ async function guardarAsistencia(datos) {
 
 async function actualizarAsistencia(indiceFila, datos) {
     try {
-        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?indiceFila=${indiceFila}&datos=${encodeURIComponent(JSON.stringify(datos))}&action=actualizarAsistenciaGET`);
+        const datosCompletos ={
+            indiceFila: indiceFila,
+            datos: datos
+        } 
+        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?indiceFila=${indiceFila}&datos=${encodeURIComponent(JSON.stringify(datosCompletos))}&action=actualizarAsistenciaGET`);
         const data = await response.json();
         return data;
     } catch (error) {
