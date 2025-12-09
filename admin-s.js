@@ -358,6 +358,8 @@ function mostrarDatos() {
     }
 });
 
+aplicarAjustesDataTables();
+
 // FUNCIÓN AUXILIAR PARA AJUSTAR LA ALTURA
 function ajustarAlturaTabla() {
     setTimeout(function() {

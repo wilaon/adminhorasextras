@@ -2,10 +2,10 @@ function aplicarAjustesDataTables() {
     // Si existe la tabla DataTables
     if (tablaDataTable) {
         // Ajustar anchos de columnas específicas
-        tablaDataTable.columns(0).width('50px');  // Fecha
-        tablaDataTable.columns(1).width('90px');  // DNI
-        tablaDataTable.columns(2).width('200px'); // Nombre
-        tablaDataTable.columns(3).width('90px');  // Turno
+        tablaDataTable.settings()[0].aoColumns[0].sWidth = '50px'; // Fecha
+           tablaDataTable.settings()[0].aoColumns[1].sWidth = '90px'; // DNI
+           tablaDataTable.settings()[0].aoColumns[2].sWidth = '200px'; // Nombre
+           tablaDataTable.settings()[0].aoColumns[3].sWidth = '90px'; // Turno
         
         // Redibujar la tabla con los nuevos anchos
         tablaDataTable.columns.adjust().draw();
