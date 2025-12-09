@@ -193,6 +193,17 @@ async function guardarAsistencia(datos) {
     }
 }
 
+async function actualizarAsistencia(indiceFila, datos) {
+    try {
+        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?indiceFila=${indiceFila}&datos=${encodeURIComponent(JSON.stringify(datos))}&action=actualizarAsistenciaGET`);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error al actualizar asistencia:', error);
+        return { success: false, error: 'Error de conexión' };
+    }
+}
+
 
 function limpiarCache() {
     empleadosCache = null;

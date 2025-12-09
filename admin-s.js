@@ -526,6 +526,8 @@ async function editarRegistro(indice) {
 }
 
 async function guardarEdicion() {
+
+
   const indice = parseInt(document.getElementById("editIndex").value);
   const registro = registrosFiltrados[indice];
 
