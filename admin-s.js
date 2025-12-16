@@ -153,36 +153,22 @@ async function cargarDatos() {
       return;
     }
 
-    console.log(" Sesión válida:", {
-      usuario: sesion.usuario,
-      nombre: sesion.nombre,
-      rol: sesion.rol,
-    });
-
     let url = CONFIG.GOOGLE_SCRIPT_URL + "?action=obtenerAsistencias";
-
-    // ═══ PASO 3: Agregar filtro según rol ═══
+  
     if (sesion.rol !== "admin") {
       const nombreIngeniero = sesion.nombre || sesion.usuario;
       url += `&ingeniero=${encodeURIComponent(nombreIngeniero)}`;
-      console.log(` Filtrando registros del ingeniero: "${nombreIngeniero}"`);
+      console.log(` Registros del ingeniero`);
     } else {
-      console.log(" Modo Administrador - Mostrando todos los registros");
+      console.log(" Modo Administrador ");
     }
-
-    console.log(" URL completa:", url);
 
     const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
     const data = await response.json();
-    console.log(" Datos recibidos:", {
-      success: data.success,
-      totalRegistros: data.registros ? data.registros.length : 0,
-    });
 
     if (data.success && data.registros) {
       todosLosRegistros = ordenarRegistroEstado(data.registros);
@@ -217,7 +203,7 @@ function mostrarDatos() {
   }
 
   // Crear filas
-  registrosFiltrados.forEach((registro, index) => {
+  registrosFiltrados.forEach((registro, filaSheet) => {
     const tr = document.createElement("tr");
 
     // Determinar color de fondo según estado
@@ -233,16 +219,16 @@ function mostrarDatos() {
     let botonesHTML = "";
 
     if (estado !== "aprobado") {
-      botonesHTML += `<button class="btn btn-approve btn-aprobar" data-filasheet="${index}" title="Aprobar">✓</button> `;
+      botonesHTML += `<button class="btn btn-approve btn-aprobar" data-filasheet="${registro.filaSheet}" title="Aprobar">✓</button> `;
     }
 
     if (estado !== "rechazado") {
-      botonesHTML += `<button class="btn btn-reject btn-rechazar" data-filasheet="${index}" title="Rechazar">✗</button> `;
+      botonesHTML += `<button class="btn btn-reject btn-rechazar" data-filasheet="${registro.filaSheet}" title="Rechazar">✗</button> `;
     }
 
     botonesHTML += `
-            <button class="btn btn-edit btn-editar" data-filasheet="${index}" title="Editar">✏️</button>
-            <button class="btn btn-delete btn-eliminar" data-filasheet="${index}" title="Eliminar">🗑️</button>
+            <button class="btn btn-edit btn-editar" data-filasheet="${registro.filaSheet}" title="Editar">✏️</button>
+            <button class="btn btn-delete btn-eliminar" data-filasheet="${registro.filaSheet}" title="Eliminar">🗑️</button>
         `;
 
     tr.innerHTML = `
@@ -306,7 +292,7 @@ function mostrarDatos() {
         }
     ],
     
-    // DOM SIMPLIFICADO - MUY IMPORTANTE
+    // DOM
     dom: '<"top" <"length-buttons-group"lB> f>rt<"bottom"ip><"clear">',
     
     // Botones de exportación
@@ -317,14 +303,14 @@ function mostrarDatos() {
             className: 'btn-success',
             title: 'Reporte_Horas_Extras',
             exportOptions: {
-                columns: ':not(:last-child)' // Excluir columna de acciones
+                columns: ':not(:last-child)' // Excluir colum acciones
             }
         }
     ],
     
     // CONFIGURACIÓN DE SCROLL CRÍTICA
     scrollX: true,
-    scrollY: false, // CAMBIO IMPORTANTE: Desactivar scrollY fijo
+    scrollY: false, 
     scrollCollapse: false,
     paging: true,
     autoWidth: false,
@@ -505,310 +491,195 @@ async function guardarNuevoRegistro() {
 }
 
 // editar registro
-async function editarRegistro(indice) {
-  const registro = registrosFiltrados[indice];
+async function editarRegistro(filaSheet) {
+
+  const registro = registrosFiltrados.find(r => r.filaSheet === filaSheet);
+  
+  if (!registro) {
+    alert('Registro no encontrado');
+    return;
+  }
+
+  const modal = document.getElementById('modalEditar');
+  modal.setAttribute('data-fila-editar', filaSheet);
 
   // Llenar formulario de edición
-  document.getElementById("editIndex").value = indice;
+  document.getElementById("editIndex").value = filaSheet;
   document.getElementById("editFecha").value = registro.fecha || "";
   document.getElementById("editDni").value = registro.dni || "";
   document.getElementById("editNombre").value = registro.nombre || "";
   document.getElementById("editHoraEntrada").value = registro.horaEntrada || "";
   document.getElementById("editHoraSalida").value = registro.horaSalida || "";
-  document.getElementById("editObservaciones").value =
-    registro.observaciones || "";
+  document.getElementById("editObservaciones").value =registro.observaciones || "";
   document.getElementById("editEstado").value = registro.estado || "Pendiente";
   document.getElementById("editTurno").value = registro.turno || "";
-  document.getElementById("editTurnoIngeniero").value =
-    registro.turnoIngeniero || "";
+  document.getElementById("editTurnoIngeniero").value = registro.turnoIngeniero || "";
 
   abrirModal("modalEditar");
 }
 
 async function guardarEdicion() {
 
+  const modal = document.getElementById('modalEditar');
+  const indiceFila = parseInt(modal.getAttribute('data-fila-editar'));
 
-  const indice = parseInt(document.getElementById("editIndex").value);
-  const registro = registrosFiltrados[indice];
-
-  const datosActualizados = {
-    fecha: document.getElementById("editFecha").value,
-    dni: document.getElementById("editDni").value,
-    nombre: document.getElementById("editNombre").value,
-    horaEntrada: document.getElementById("editHoraEntrada").value,
-    horaSalida: document.getElementById("editHoraSalida").value,
-    turno: document.getElementById("editTurno").value,
-    turnoIngeniero: document.getElementById("editTurnoIngeniero").value,
-    observaciones: document.getElementById("editObservaciones").value,
-    estado: document.getElementById("editEstado").value,
+  if (!indiceFila || indiceFila < 2) {
+    alert('Error: No se encontró el registro a editar');
+    return;
+  }
+  const datos = {
+    fecha: document.getElementById('editFecha').value,
+    dni: document.getElementById('editDni').value,
+    nombre: document.getElementById('editNombre').value,
+    horaEntrada: document.getElementById('editHoraEntrada').value || "",
+    horaSalida: document.getElementById('editHoraSalida').value || "",
+    turno: document.getElementById('editTurno').value,
+    turnoIngeniero: document.getElementById('editTurnoIngeniero').value,
+    observaciones: document.getElementById('editObservaciones').value,
+    estado: document.getElementById('editEstado').value
   };
+  console.log('datos a enviar:',datos)
+  
+  if (!datos.fecha || !datos.turno || !datos.turnoIngeniero) {
+    alert('Complete los campos requeridos');
+    return;
+  }
+  mostrarLoading(true);
+  try {
 
-  // 1. Crear el payload completo que se enviará en la URL
-  const datosParaEnvio = {
-    action: "actualizarAsistenciaGET", //  Nueva acción que doGet manejará
-    indiceFila: registro.filaSheet,
-    datos: datosActualizados, // Objeto JSON completo
-  };
+    console.log('Llamando actualizarAsistencia con indiceFila:', indiceFila);
+    const result = await actualizarAsistencia(indiceFila, datos);
 
-  document.getElementById("loadingOverlay").style.display = "flex";
-
- try {
-    console.log(" Actualizando vía GET Intermediario...");
-
-    const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=${
-      datosParaEnvio.action
-    }&data=${encodeURIComponent(JSON.stringify(datosParaEnvio))}`;
-
-    const response = await fetch(url);
-
-    const resultado = await response.json();
-    console.log(" Respuesta:", resultado);
-
-    if (resultado.success) {
-      console.log(" Actualizado");
-      cerrarModal("modalEditar");
-      await cargarDatos();
-
-      // Reaplicar filtros
-      const fechaDesde = document.getElementById("fechaDesde").value;
-      const fechaHasta = document.getElementById("fechaHasta").value;
-
-      if (fechaDesde || fechaHasta) {
-        registrosFiltrados = todosLosRegistros.filter((reg) => {
-          if (fechaDesde && reg.fecha < fechaDesde) return false;
-          if (fechaHasta && reg.fecha > fechaHasta) return false;
-          return true;
-        });
-        mostrarDatos();
-      }
-    } else {
-      alert(" Error: " + resultado.error);
-    }
+    alert('✓ Registro actualizado correctamente');
+    cerrarModal('modalEditar');
+    await cargarDatos();
+    
+    
   } catch (error) {
-    console.error(" Error:", error);
-    alert(" Error de conexión: " + error.message);
+    console.error('Error guardando edición:', error);
+    alert('Error: ' + error.message);
   } finally {
-    document.getElementById("loadingOverlay").style.display = "none";
+    modal.removeAttribute('data-fila-editar');
+    mostrarLoading(false);
   }
 }
 
-/*
-// Guardar edición
-async function guardarEdicion() {
-    const indice = parseInt(document.getElementById('editIndex').value);
-    const registro = registrosFiltrados[indice];
-
-    // Preparar datos actualizados
-    const datosActualizados = {
-        fecha: document.getElementById('editFecha').value,
-        dni: document.getElementById('editDni').value,
-        nombre: document.getElementById('editNombre').value,
-        horaEntrada: document.getElementById('editHoraEntrada').value,
-        horaSalida: document.getElementById('editHoraSalida').value,
-        turno: document.getElementById('editTurno').value,
-        turnoIngeniero: document.getElementById('editTurnoIngeniero').value,
-        observaciones: document.getElementById('editObservaciones').value,
-        estado: document.getElementById('editEstado').value
-    };
-    
-    // Mostrar loading
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    try {
-
-        // USANDO GET  
-        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=actualizarAsistencia&indiceFila=${registro.filaSheet}&datos=${encodeURIComponent(JSON.stringify(datosActualizados))}`;  
-        console.log('Actualizando registro...');
-        
-        const response = await fetch(url);
-        const resultado = await response.json();
-        console.log('Respuesta:', resultado);
-        
-        if (resultado.success) {
-            console.log('✅ Registro actualizado en servidor');
-            
-            // Cerrar modal PRIMERO
-            cerrarModal('modalEditar');
-            
-            // Recargar datos
-            console.log('🔄 Recargando datos...');
-            await cargarDatos();
-            console.log('✅ Datos recargados');
-            
-            // ✅ CLAVE: Reaplicar filtros de fecha si existen
-            const fechaDesde = document.getElementById('fechaDesde').value;
-            const fechaHasta = document.getElementById('fechaHasta').value;
-            
-            if (fechaDesde || fechaHasta) {
-                console.log('🔍 Reaplicando filtros de fecha...');
-                registrosFiltrados = todosLosRegistros.filter(registro => {
-                    if (fechaDesde && registro.fecha < fechaDesde) return false;
-                    if (fechaHasta && registro.fecha > fechaHasta) return false;
-                    return true;
-                });
-                mostrarDatos();
-                console.log('✅ Filtros aplicados');
-            }
-           
-        } else {
-            console.error('❌ Error del servidor:', resultado.error);
-            alert('✗ Error: ' + resultado.error);
-        }
-        
-    } catch (error) {
-        console.error('❌ Error:', error);
-        alert('✗ Error al actualizar: ' + error.message);
-    } finally {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }
-    
-}*/
-
-/*
-async function guardarEdicion() {
-    const indice = parseInt(document.getElementById('editIndex').value);
-    const registro = registrosFiltrados[indice];
-
-    const datosActualizados = {
-        fecha: document.getElementById('editFecha').value,
-        dni: document.getElementById('editDni').value,
-        nombre: document.getElementById('editNombre').value,
-        horaEntrada: document.getElementById('editHoraEntrada').value,
-        horaSalida: document.getElementById('editHoraSalida').value,
-        turno: document.getElementById('editTurno').value,
-        turnoIngeniero: document.getElementById('editTurnoIngeniero').value,
-        observaciones: document.getElementById('editObservaciones').value,
-        estado: document.getElementById('editEstado').value
-    };
-    
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    
-    try {
-        console.log('📤 Actualizando vía POST...');
-        
-        // SIN mode: 'no-cors' - Google Apps Script maneja CORS
-        const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'actualizarAsistencia',
-                indiceFila: registro.filaSheet,
-                datos: datosActualizados
-            })
-        });
-        
-        // ✅ Puedes leer la respuesta
-        const resultado = await response.json();
-        console.log(' Respuesta:', resultado);
-        
-        if (resultado.success) {
-            console.log(' Actualizado');
-            cerrarModal('modalEditar');
-            await cargarDatos();
-            
-            // Reaplicar filtros
-            const fechaDesde = document.getElementById('fechaDesde').value;
-            const fechaHasta = document.getElementById('fechaHasta').value;
-            
-            if (fechaDesde || fechaHasta) {
-                registrosFiltrados = todosLosRegistros.filter(reg => {
-                    if (fechaDesde && reg.fecha < fechaDesde) return false;
-                    if (fechaHasta && reg.fecha > fechaHasta) return false;
-                    return true;
-                });
-                mostrarDatos();
-            }
-        } else {
-            alert('✗ Error: ' + resultado.error);
-        }
-        
-    } catch (error) {
-        console.error(' Error:', error);
-        alert('✗ Error: ' + error.message);
-    } finally {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }
-}*/
 
 // Variable para el índice a eliminar
 let indiceAEliminar = null;
 
 // Eliminar registro
-function eliminarRegistro(indice) {
-  indiceAEliminar = indice;
+function eliminarRegistro(filaSheet) {
+  console.log('📋 Intentando eliminar fila:', filaSheet);
+  
+  if (!filaSheet || filaSheet < 2) {
+    alert('Error: No se puede eliminar este registro (índice inválido)');
+    console.error('Índice inválido recibido:', filaSheet);
+    return;
+  }
+
+  //indiceAEliminar = filaSheet;
+  const modal = document.getElementById('modalEliminar');
+  modal.setAttribute('data-fila-eliminar', filaSheet);
   abrirModal("modalEliminar");
 }
 
 // Confirmar eliminación
 async function confirmarEliminar() {
-  if (indiceAEliminar === null) return;
-  const registro = registrosFiltrados[indiceAEliminar];
-  console.log("Eliminando registro:");
-
-  // Mostrar loading
-  document.getElementById("loadingOverlay").style.display = "flex";
-
+  const modal = document.getElementById('modalEliminar');
+  const indiceAEliminar = parseInt(modal.getAttribute('data-fila-eliminar'));
+  
+  if (!indiceAEliminar || indiceAEliminar < 2) {
+    alert('Error: Índice de fila inválido');
+    console.error('Índice inválido:', indiceAEliminar);
+    cerrarModal('modalEliminar');
+    return;
+  }
+  
+  cerrarModal('modalEliminar');
+  mostrarLoading(true);
+  
   try {
-    const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=eliminarAsistencia&indiceFila=${registro.filaSheet}`;
-    const response = await fetch(url);
-    const resultado = await response.json();
-    console.log("Respuesta del servidor:", resultado);
-    if (resultado.success) {
-      console.log(" Registro eliminado correctamente");
-      // Cerrar modal
-      cerrarModal("modalEliminar");
-      // Limpiar variable
-      indiceAEliminar = null;
-      // Recargar datos
-      await cargarDatos(true);
+    console.log(' Eliminando fila:', indiceAEliminar);
+    const result = await eliminarAsistencia(indiceAEliminar);
+    
+    if (result.success) {
+      console.log('✓ Registro eliminado correctamente');
+      await cargarDatos();
     } else {
-      console.error("Error del servidor:", resultado.error);
-      alert(" Error al eliminar: " + resultado.error);
+      alert('Error al eliminar: ' + (result.error || 'Error desconocido'));
     }
+    
   } catch (error) {
-    console.error(" Error:", error);
-    alert(" Error de conexión: " + error.message);
+    console.error('Error eliminando:', error);
+    alert('Error: ' + error.message);
   } finally {
-    // Ocultar loading
-    document.getElementById("loadingOverlay").style.display = "none";
+    modal.removeAttribute('data-fila-eliminar');
+    mostrarLoading(false);
   }
 }
 
-async function aprobarRegistro(indice) {
-  const registro = registrosFiltrados[indice];
-  await cambiarEstadoRegistro(registro.filaSheet, "Aprobado");
-}
-
-async function rechazarRegistro(indice) {
-  const registro = registrosFiltrados[indice];
-  if (!confirm("¿Está seguro de rechazar esta solicitud?")) return;
-
-  await cambiarEstadoRegistro(registro.filaSheet, "Rechazado");
-}
-
-async function cambiarEstadoRegistro(filaSheet, nuevoEstado) {
-  document.getElementById("loadingOverlay").style.display = "flex";
-
+async function aprobarRegistro(filaSheet) {
+  if (!filaSheet || filaSheet < 2) {
+    console.error('Número de fila inválido');
+    alert('Error: Número de fila inválido');
+    return;
+  }
+  
+  mostrarLoading(true);
+  
   try {
-    const url = `${CONFIG.GOOGLE_SCRIPT_URL}?action=cambiarEstado&indiceFila=${filaSheet}&estado=${nuevoEstado}`;
 
-    const response = await fetch(url);
-    const resultado = await response.json();
-
-    if (resultado.success) {
-      console.log(` Estado cambiado a: ${nuevoEstado}`);
-      await cargarDatos(true);
+    const result = await cambiarEstado(filaSheet, 'Aprobado');
+    
+    // 🆕 NUEVO: Verifica resultado
+    if (result.success) {
+      console.log('✓ Registro aprobado correctamente');
+      await cargarDatos();
     } else {
-      alert(" Error: " + resultado.error);
+      alert('Error al aprobar: ' + (result.error || 'Error desconocido'));
     }
+    
   } catch (error) {
-    console.error("Error:", error);
-    alert(" Error al cambiar estado");
+    console.error('Error en aprobar', error);
+    alert('Error: ' + error.message);
   } finally {
-    document.getElementById("loadingOverlay").style.display = "none";
+    mostrarLoading(false);
   }
 }
+
+async function rechazarRegistro(filaSheet) {
+  if (!filaSheet || filaSheet < 2) {
+    console.error('Número de fila inválido');
+    alert('Error: Número de fila inválido');
+    return;
+  }
+  
+  const confirmar = confirm('¿Está seguro de rechazar esta solicitud?');
+  if (!confirmar) return;
+  
+  mostrarLoading(true);
+  
+  try {
+
+    const result = await cambiarEstado(filaSheet, 'Rechazado');
+    
+    if (result.success) {
+      console.log('✓ Registro rechazado correctamente');
+      await cargarDatos();
+    } else {
+      alert('Error al rechazar: ' + (result.error || 'Error desconocido'));
+    }
+    
+  } catch (error) {
+    console.error('Error en rechazar', error);
+    alert('Error: ' + error.message);
+  } finally {
+    mostrarLoading(false);
+  }
+}
+
+
 
 function cerrarModal(modalId) {
   const modal = document.getElementById(modalId);
@@ -1064,37 +935,24 @@ function actualizarResumenLote() {
   const totalHoras = seleccionados * horasPorColaborador;
 
   document.getElementById("totalSeleccionados").textContent = seleccionados;
-  document.getElementById("horasPorColaborador").textContent =
-    horasPorColaborador;
+  document.getElementById("horasPorColaborador").textContent =horasPorColaborador;
   document.getElementById("totalRegistros").textContent = seleccionados;
   document.getElementById("totalHorasLote").textContent = totalHoras;
 }
 
 // Confirmar e insertar registros en lote
 async function confirmarInsertarLote() {
+
   const mes = document.getElementById("loteMes").value;
   const dias = parseInt(document.getElementById("loteDias").value);
   const ingeniero = document.getElementById("loteIngeniero").value;
   const turnoRadio = document.querySelector('input[name="turnoLote"]:checked');
 
-  // Validaciones
-  if (!mes) {
-    alert("Seleccione el mes");
+  if (!mes || !dias || !ingeniero || !turnoRadio) {
+    alert("Complete todos los campos requeridos");
     return;
   }
-  if (!dias || dias <= 0) {
-    alert("Ingrese los días trabajados");
-    return;
-  }
-  if (!ingeniero) {
-    alert("Seleccione el ingeniero de turno");
-    return;
-  }
-  if (!turnoRadio) {
-    alert("Seleccione un turno");
-    return;
-  }
-
+ 
   const seleccionados = [];
   document.querySelectorAll(".chkColaborador:checked").forEach((chk) => {
     const index = parseInt(chk.dataset.index);
@@ -1131,10 +989,7 @@ async function confirmarInsertarLote() {
     // Calcular fecha (último día del mes)
     const [año, mesNum] = mes.split("-");
     const ultimoDiaMes = new Date(año, mesNum, 0).getDate();
-    const fechaRegistro = `${año}-${mesNum}-${String(ultimoDiaMes).padStart(
-      2,
-      "0"
-    )}`;
+    const fechaRegistro = `${año}-${mesNum}-${String(ultimoDiaMes).padStart(2,"0")}`;
 
     // Preparar datos para enviar
     const datosLote = {
@@ -1150,26 +1005,16 @@ async function confirmarInsertarLote() {
       })),
     };
 
-    // Enviar al servidor
-    const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(datosLote),
-    });
+    const result = await insertarLoteHoras25(datosLote)
 
-    console.log("✓ Petición enviada correctamente");
+    if (result.success) {
+      alert(`✓ ${result.registrosCreados} registros insertados exitosamente`);
+      cerrarModal("modalInsertarLote");
+      await cargarDatos();
+    } else {
+      alert('Error: ' + (result.error || 'Error desconocido'));
+    }
 
-    // Esperar un momento para que el servidor procese
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    alert(
-      `Petición enviada!\n\nSe solicitó insertar ${seleccionados.length} registros.\n\nLa tabla se recargará para verificar.`
-    );
-    cerrarModal("modalInsertarLote");
-
-    // Recargar tabla para verificar que se insertaron
-    await cargarDatos(true);
   } catch (error) {
     console.error("Error:", error);
     alert("Error al insertar registros: " + error.message);
@@ -1203,9 +1048,7 @@ window.onload = async function () {
   const hace30Dias = new Date();
   hace30Dias.setDate(hoy.getDate() - 30);
 
-  document.getElementById("fechaDesde").value = hace30Dias
-    .toISOString()
-    .split("T")[0];
+  document.getElementById("fechaDesde").value = hace30Dias.toISOString().split("T")[0];
   document.getElementById("fechaHasta").value = hoy.toISOString().split("T")[0];
 
   try {
@@ -1220,7 +1063,6 @@ window.onload = async function () {
       btnGuardarEdicion.onclick = async function () {
         await guardarEdicion();
       };
-      console.log(" Event listener de edición configurado");
     }
 
     console.log(" Sistema iniciado correctamente");

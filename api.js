@@ -1,171 +1,243 @@
 // API - Comunicación con Google Apps Script
 
-// Cache de empleados
-let empleadosCache = null;
-let empleadosCacheTimestamp = null;
+// ═══════════════════════════════════════════════════════════
+// SISTEMA DE CACHE CENTRALIZADO
+// ═══════════════════════════════════════════════════════════
+const CacheManager = {
+    caches: {
+        empleados: { data: null, timestamp: null, duration: 300000 },  // 5 min
+        turnos: { data: null, timestamp: null, duration: 600000 },     // 10 min
+        ingenieros: { data: null, timestamp: null, duration: 600000 }  // 10 min
+    },
+    get(key) {
+        const cache = this.caches[key];
+        if (!cache || !cache.data || !cache.timestamp) return null;
+        
+        const ahora = Date.now();
+        if ((ahora - cache.timestamp) > cache.duration) {
+            this.clear(key);
+            return null;
+        }
+        return cache.data;
+    },
+    set(key, data) {
+        const cache = this.caches[key];
+        if (cache) {
+            cache.data = data;
+            cache.timestamp = Date.now();
+        }
+    },
+    clear(key = null) {
+        if (key) {
+            const cache = this.caches[key];
+            if (cache) {
+                cache.data = null;
+                cache.timestamp = null;
+            }
+        } else {
+            Object.keys(this.caches).forEach(k => {
+                this.caches[k].data = null;
+                this.caches[k].timestamp = null;
+            });
+        }
+    }
+};
 
-let cacheTimestamp = null;
+// ═══════════════════════════════════════════════════════════
+// HELPER PARA PETICIONES POST
+// ═══════════════════════════════════════════════════════════
+async function postToServer(action, data = {}, timeout = 30000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+        const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: action,
+                ...data
+            }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        //Verificación de status HTTP 
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        //Lectura de respuesta (antes no se podía con no-cors)
+        const result = await response.json();
+        //Verificación de éxito
+        if (result.success === false) {
+            throw new Error(result.error || 'Error desconocido en el servidor');
+        }
+        return result;
+        
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error(`Operación excedió ${timeout}ms`);
+        }
+        if (error instanceof TypeError) {
+            throw new Error('No se pudo conectar con el servidor');
+        }
+        
+        throw error;
+    }
+}
 
-let turnosCache = null;
-let turnosCacheTimestamp = null;
-
-let ingenierosCache = null;
-let ingenierosCacheTimestamp = null;
-
-const CACHE_DURATION_EMPLEADOS = 300000; 
-const CACHE_DURATION_TURNOS = 600000;
-
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 function formatearDNI(dni) {
     if (!dni) return '';
-    
-    // Remover guiones y espacios existentes
     let dniLimpio = dni.toString().replace(/[-\s]/g, '');
-    
-    // Rellenar con ceros a la izquierda hasta 13 dígitos
     dniLimpio = dniLimpio.padStart(13, '0');
-    
-    // Aplicar formato
     return dniLimpio.substring(0, 4) + '-' + 
            dniLimpio.substring(4, 8) + '-' + 
            dniLimpio.substring(8, 13);
 }
 
-// Cargar empleados desde el servidor
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 async function cargarEmpleados(forzar = false) {
     const ahora = Date.now();
     
-    // Usar cache si es válido
-    if (!forzar && empleadosCache && empleadosCacheTimestamp && 
-        (ahora - empleadosCacheTimestamp) < CONFIG.CACHE_DURATION_EMPLEADOS) {
-        return empleadosCache;
+    if (!forzar) {
+        const cached = CacheManager.get('empleados');
+        if (cached) return cached;
     }
     
     try {
-        console.log('Cargando empleados....');
+        console.log('Cargando empleados...');
         const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getEmpleados`);
-        const data = await response.json();
-
-        console.log('Respuesta del servidor...')
         
-        if (data.success) {
-            empleadosCache = data.empleados;
-            empleadosCacheTimestamp = ahora; // Corregido: usar empleadosCacheTimestamp
-     
-
-            return empleadosCache;
-        }
-        
-        throw new Error('Error al cargar empleados');
-    } catch (error) {
-        console.error('Error:', error);
-        return empleadosCache || null;
-    }
-}
-
-// Buscar empleado en cache local
-function buscarEmpleado(dni) {
-    if (!empleadosCache) return null;
-    return empleadosCache[dni] || null;
-}
-
-
-// ═══════════════════════════════════════════════════════════
-// CARGAR TURNOS
-// ═══════════════════════════════════════════════════════════
-async function cargarTurnos(forzar = false) {
-    const ahora = Date.now();
-
-    if (!forzar && turnosCache && turnosCacheTimestamp && 
-        (ahora - turnosCacheTimestamp) < CACHE_DURATION_TURNOS) {
-        return turnosCache;
-    }
-
-    try {
-        console.log('Cargando turnos desde Sheets...');
-        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getTurnos`);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
+        
         const data = await response.json();
-        if (data.success && Array.isArray(data.turnos)) {
-            turnosCache = data.turnos;
-            turnosCacheTimestamp = ahora;
-            return turnosCache;
-        } else {
-            console.error(' Formato de datos inválido:', data);
-            return turnosCache || [];
-        } 
+        
+        if (data.success && data.empleados) {
+            CacheManager.set('empleados', data.empleados);
+            return data.empleados;
+        }
+        
+        throw new Error('Error al cargar empleados');
+        
     } catch (error) {
-        console.error(' Error cargando turnos:', error);
-        return turnosCache || [];
+        console.error('Error:', error);
+        const cached = CacheManager.get('empleados');
+        if (cached) {
+            console.warn('Usando empleados en cache');
+            return cached;
+        }
+        return null;
     }
 }
 
 // ═══════════════════════════════════════════════════════════
-// CARGAR INGENIEROS
+// ═══════════════════════════════════════════════════════════
+function buscarEmpleado(dni) {
+    const empleados = CacheManager.get('empleados');
+    if (!empleados) return null;
+    return empleados[dni] || null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+async function cargarTurnos(forzar = false) {
+
+    if (!forzar) {
+        const cached = CacheManager.get('turnos');
+        if (cached) return cached;
+    }
+    try {
+        console.log('Cargando turnos desde Sheets...');
+        const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getTurnos`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.turnos)) {
+            CacheManager.set('turnos', data.turnos);
+            return data.turnos;
+        } else {
+            console.error('Formato de datos inválido:', data);
+            return CacheManager.get('turnos') || [];
+        } 
+    } catch (error) {
+        console.error('Error cargando turnos:', error);
+        return CacheManager.get('turnos') || [];
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════
 async function cargarIngTurno(forzar = false) {
-     const ahora = Date.now();
 
-    if (!forzar && ingenierosCache && ingenierosCacheTimestamp && 
-        (ahora - ingenierosCacheTimestamp) < CACHE_DURATION_TURNOS) {
-        return ingenierosCache;
+    if (!forzar) {
+        const cached = CacheManager.get('ingenieros');
+        if (cached) return cached;
     }
 
     try {
         console.log('Cargando ingenieros desde Sheets...');
         const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getIngTurno`);
+        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
-        }
+        }   
         const data = await response.json();
+        
         if (data.success && Array.isArray(data.ingenieros)) {
-            ingenierosCache = data.ingenieros;
-            ingenierosCacheTimestamp = ahora;
-            return ingenierosCache;
+            CacheManager.set('ingenieros', data.ingenieros);
+            return data.ingenieros;
         } else {
-            console.error(' Formato de datos inválido:', data);
-            return ingenierosCache || [];
+            console.error('Formato de datos inválido:', data);
+            return CacheManager.get('ingenieros') || [];
         }
     } catch (error) {
-        console.error(' Error cargando ingenieros:', error);
-        return ingenierosCache || [];
+        console.error('Error cargando ingenieros:', error);
+        return CacheManager.get('ingenieros') || [];
     }
 }
 
+// ═══════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════
 async function validarLoginServidor(usuario, password) {
     try {
         console.log('Validando login en servidor...');
-        const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'validarLogin',
-                usuario: usuario,
-                password: password
-            })
-        });
         
-        const data = await response.json();
+        //  postToServer 
+        const result = await postToServer('validarLogin', {
+            usuario: usuario,
+            password: password
+        });
+        return result;
 
-        return data;
     } catch (error) {
-        console.error('Error validando login:', error);
-        return { success: false, error: 'Error de conexión' };
+        return { 
+            success: false, 
+            error: error.message || 'Error de conexión' 
+        };
     }
 }
 
-
-// Guardar asistencia en Google Sheets
+// ═══════════════════════════════════════════════════════════
+//  GUARDAR ASISTENCIA (Tu código líneas 163-199)
+// ═══════════════════════════════════════════════════════════
 async function guardarAsistencia(datos) {
     try {
-        // Preparar fila
         const fila = [
             new Date().toISOString(),
-
             datos.fecha,
             datos.dni,
             datos.nombre,
@@ -174,59 +246,139 @@ async function guardarAsistencia(datos) {
             datos.turno,
             datos.turnoIngeniero,
             datos.observaciones || '',
-            // Añadir el estado inicial si no lo tienes en el formulario
             'Pendiente' 
         ];
-        await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'guardarAsistencia',
-                fila: fila
-
-            })
-        });
         
-        console.log('Asistencia guardada exitosamente');
+        console.log('Guardando asistencia...');
+        const result = await postToServer('guardarAsistencia', {
+            fila: fila
+        });
         return { success: true };
+        
     } catch (error) {
-        console.error('Error:', error);
-        return { success: false, error: error.message };
+        return { 
+            success: false, 
+            error: error.message 
+        };
     }
 }
 
-// Actualiza un registro de asistencia 
+// ═══════════════════════════════════════════════════════════
+// ACTUALIZAR ASISTENCIA
+// ═══════════════════════════════════════════════════════════
 async function actualizarAsistencia(indiceFila, datos) {
     try {
-        // 1. Creamos el objeto completo tal como lo espera el Apps Script
-        const datosCompletos = {
+        console.log('Actualizando asistencia...', { fila: indiceFila });
+        
+        const result = await postToServer('actualizarAsistencia', {
             indiceFila: indiceFila,
-            datos: datos 
-        };
+            datos: datos
+        });
         
-        // 2. Construimos la URL correctamente, usando el parámetro 'data'
-        const url = `${CONFIG.GOOGLE_SCRIPT_URL}?data=${encodeURIComponent(JSON.stringify(datosCompletos))}&action=actualizarAsistenciaGET`;
-
-        // 3. Realizamos la solicitud fetch DIRECTAMENTE con la URL
-        const response = await fetch(url);
+        return result;
         
-        const data = await response.json();
-        return data;
     } catch (error) {
-        console.error('Error al actualizar asistencia:', error);
-        return { success: false, error: 'Error de conexión' };
+        return { 
+            success: false, 
+            error: error.message 
+        };
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// NUEVA FUNCIÓN - ELIMINAR ASISTENCIA
+// ═══════════════════════════════════════════════════════════
+async function eliminarAsistencia(indiceFila) {
+    try {
+        console.log('Eliminando asistencia...', { fila: indiceFila });
+    
+        const result = await postToServer('eliminarAsistencia', {
+            indiceFila: indiceFila
+        });
+        return result;
+
+    } catch (error) {
+        return { 
+            success: false, 
+            error: error.message 
+        };
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CAMBIAR ESTADO
+// ═══════════════════════════════════════════════════════════
+async function cambiarEstado(indiceFila, nuevoEstado) {
+    try {
+        console.log('Cambiando estado...', { 
+            fila: indiceFila, 
+            estado: nuevoEstado 
+        });
+        
+        const result = await postToServer('cambiarEstado', {
+            indiceFila: indiceFila,
+            nuevoEstado: nuevoEstado
+        });
+        
+        console.log(`✓ Estado cambiado a: ${nuevoEstado}`);
+        return result;
+        
+    } catch (error) {
+        console.error('Error cambiando estado:', error);
+        return { 
+            success: false, 
+            error: error.message 
+        };
     }
 }
 
 
-function limpiarCache() {
-    empleadosCache = null;
-    empleadosCacheTimestamp = null;
-    turnosCache = null;
-    turnosCacheTimestamp = null;
-    ingenierosCache = null;
-    ingenierosCacheTimestamp = null;
+// ═══════════════════════════════════════════════════════════
+// INSERTAR LOTE HORAS 25
+// ═══════════════════════════════════════════════════════════
+async function insertarLoteHoras25(datosLote) {
+    try {
+        console.log('Insertando lote en servidor...');
+        
+        //postToServer AQUI
+        const result = await postToServer('insertarLoteHoras25', datosLote);
+
+        console.log('✓ Lote insertado exitosamente');
+        return result;
+        
+    } catch (error) {
+        console.error('Error insertando lote:', error);
+        return { 
+            success: false, 
+            error: error.message 
+        };
+    }
 }
+
+// ═══════════════════════════════════════════════════════════
+// LIMPIAR CACHE
+// ═══════════════════════════════════════════════════════════
+function limpiarCache() {
+    CacheManager.clear();
+    console.log('Cache limpiado');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  OBTENER ESTADO CACHE
+// ═══════════════════════════════════════════════════════════
+function obtenerEstadoCache() {
+    const status = {};
+    const ahora = Date.now();
+    
+    Object.keys(CacheManager.caches).forEach(key => {
+        const cache = CacheManager.caches[key];
+        const tieneData = !!cache.data;
+        const edad = cache.timestamp ? ahora - cache.timestamp : null;
+        const esValido = edad !== null && edad < cache.duration;
+        
+        status[key] = { tieneData, edad, esValido };
+    });
+    
+    return status;
+}
+

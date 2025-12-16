@@ -222,38 +222,36 @@
         let usuariosCargados = {};
               
         async function cargarUsuarios() {
+
             try {
                 const selectUsuario = document.getElementById('usuario');
                 selectUsuario.innerHTML = '<option value="">Cargando usuarios...</option>';
                 
-                const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL + '?action=getUsers');
+                // ✅ CAMBIO: Nueva acción que NO retorna passwords
+                const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL + '?action=getUsuariosSeguros');
                 const data = await response.json();
                 
-                if (data.success && data.users) {
-                    // Guardar usuarios en variable global
-                    usuariosCargados = data.users;
-                    
+                if (data.success && data.usuarios) {
                     selectUsuario.innerHTML = '<option value="">Seleccionar usuario...</option>';
                     
-                    // Ordenar: Admin primero, luego ingenieros alfabéticamente
-                    const usersArray = Object.values(data.users);
-                    usersArray.sort((a, b) => {
+                    // Ordenar
+                    data.usuarios.sort((a, b) => {
                         if (a.Rol === '1' || a.Rol === 1) return -1;
                         if (b.Rol === '1' || b.Rol === 1) return 1;
                         return a.User.localeCompare(b.User);
                     });
                     
-                    usersArray.forEach(user => {
+                    data.usuarios.forEach(user => {
                         const option = document.createElement('option');
                         option.value = user.User;
                         const rol = (user.Rol === '1' || user.Rol === 1) ? 'Admin' : 'Ingeniero';
                         option.textContent = `${user.User} (${rol})`;
                         selectUsuario.appendChild(option);
                     });
-                    
-                } else {
-                    throw new Error('No se pudieron cargar usuarios');
-                }
+                
+                    } else {
+                        throw new Error('No se pudieron cargar usuarios');
+                    }
             } catch (error) {
                 console.error('Error cargando usuarios:', error);
                 document.getElementById('usuario').innerHTML = '<option value="">Error al cargar usuarios</option>';
@@ -270,79 +268,65 @@
             const btnLogin = document.getElementById('btnLogin');
             const form = document.getElementById('loginForm');
             
-            // Validaciones básicas
             if (!usuario) {
-                errorMessage.textContent = ' Seleccione un usuario';
+                errorMessage.textContent = '⚠ Seleccione un usuario';
                 errorMessage.classList.add('show');
                 return;
             }
             
             if (!password) {
-                errorMessage.textContent = ' Ingrese su contraseña';
+                errorMessage.textContent = '⚠ Ingrese su contraseña';
                 errorMessage.classList.add('show');
                 return;
             }
             
-            // Mostrar loading
             errorMessage.classList.remove('show');
             form.style.display = 'none';
             loading.style.display = 'block';
             btnLogin.disabled = true;
             
             try {
-                // VALIDAR EN FRONTEND (comparar con datos ya cargados)
-                setTimeout(() => {
-                    // Buscar usuario
-                    let usuarioEncontrado = null;
+                // ✅ ENVIAR AL SERVIDOR PARA VALIDACIÓN
+                const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'validarLogin',
+                        usuario: usuario,
+                        password: password
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.usuario) {
+                    // ✅ Login exitoso - guardar sesión
+                    const sesion = {
+                        usuario: result.usuario.user,
+                        user: result.usuario.user,
+                        dni: result.usuario.dni,
+                        rol: result.usuario.rol,
+                        nombre: result.usuario.nombre,
+                        timestamp: new Date().getTime()
+                    };
                     
-                    for (let key in usuariosCargados) {
-                        if (usuariosCargados[key].User === usuario) {
-                            usuarioEncontrado = usuariosCargados[key];
-                            break;
-                        }
-                    }
+                    localStorage.setItem('sesion', JSON.stringify(sesion));
+                    window.location.href = 'index.html';
                     
-                    if (!usuarioEncontrado) {
-                        errorMessage.textContent = ' Usuario no encontrado';
-                        errorMessage.classList.add('show');
-                        form.style.display = 'block';
-                        loading.style.display = 'none';
-                        btnLogin.disabled = false;
-                        return;
-                    }
-                    
-                    
-                    
-                    // VALIDAR PASSWORD
-                    if (password === usuarioEncontrado.Password) {
-                        // Login exitoso
-                        const esAdmin = (usuarioEncontrado.Rol === '1' || usuarioEncontrado.Rol === 1);
-                        
-                        const sesion = {
-                            usuario: usuario,
-                            user: usuario,
-                            dni: usuarioEncontrado.DNI,
-                            rol: esAdmin ? 'admin' : 'ingeniero',
-                            nombre: esAdmin ? 'Administrador' : usuario,
-                            timestamp: new Date().getTime()
-                        };
-                        
-                        localStorage.setItem('sesion', JSON.stringify(sesion));
-                        
-                        window.location.href = 'index.html';
-                    } else {
-                        // Password incorrecto
-                        errorMessage.textContent = ' Contraseña incorrecta';
-                        errorMessage.classList.add('show');
-                        form.style.display = 'block';
-                        loading.style.display = 'none';
-                        btnLogin.disabled = false;
-                    }
-                }, 1000);
+                } else {
+                    // ❌ Login fallido
+                    errorMessage.textContent = '⚠ ' + (result.error || 'Usuario o contraseña incorrectos');
+                    errorMessage.classList.add('show');
+                    form.style.display = 'block';
+                    loading.style.display = 'none';
+                    btnLogin.disabled = false;
+                }
                 
             } catch (error) {
                 console.error('Error:', error);
-                errorMessage.textContent = ' Error de conexión';
+                errorMessage.textContent = '⚠ Error de conexión';
                 errorMessage.classList.add('show');
                 form.style.display = 'block';
                 loading.style.display = 'none';

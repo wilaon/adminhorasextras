@@ -158,8 +158,7 @@ async function inicializar() {
         // Configurar eventos
         inicializarEventos();
         
-        console.log('Sistema iniciado');
-    }catch{
+    }catch(error){
         console.error(' Error en inicialización:', error);
         alert('Error al iniciar el sistema. Por favor recargue la página.');
     }
