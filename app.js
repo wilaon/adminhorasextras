@@ -129,7 +129,7 @@ function inicializarEventos() {
             elementos.dniValidation.classList.remove('show');
             elementos.nombre.value = '';
             elementos.nombre.readOnly = false;
-           // elementos.submitBtn.disabled = true;
+           
         }
     });  
     

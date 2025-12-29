@@ -202,6 +202,23 @@ function mostrarDatos() {
     return;
   }
 
+
+  const fechaDNI = {};
+  const duplicados = new Set();
+
+  registrosFiltrados.forEach(registro =>{
+    // Limpiar espacios en blanco y normalizar
+    const fecha = (registro.fecha || '').toString().trim();
+    const dni = (registro.dni || '').toString().trim();
+    const clave = `${fecha}_${dni}`;
+    
+    if (fechaDNI[clave]) {
+      duplicados.add(clave);
+    }else{
+      fechaDNI[clave] = true;
+    }
+  });
+
   // Crear filas
   registrosFiltrados.forEach((registro, filaSheet) => {
     const tr = document.createElement("tr");
@@ -215,6 +232,22 @@ function mostrarDatos() {
       colorFondo = "background-color: #fa7575ff;";
     }
     tr.style = colorFondo;
+
+    
+    // 🆕 Verificar si este registro es duplicado (con trim)
+    const fecha = (registro.fecha || '').toString().trim();
+    const dni = (registro.dni || '').toString().trim();
+    const claveDuplicado = `${fecha}_${dni}`;
+    const esDuplicado = duplicados.has(claveDuplicado);
+
+    const fechaHTML = esDuplicado 
+      ? `<span class="texto-duplicado" title="⚠️ DNI duplicado en esta fecha">${registro.fecha || '-'}</span>`
+      : (registro.fecha || '-');
+      
+    const dniHTML = esDuplicado 
+      ? `<span class="texto-duplicado" title="⚠️ DNI duplicado en esta fecha">${registro.dni || '-'}</span>`
+      : (registro.dni || '-');
+
 
     let botonesHTML = "";
 
@@ -232,8 +265,8 @@ function mostrarDatos() {
         `;
 
     tr.innerHTML = `
-            <td>${registro.fecha || "-"}</td>
-            <td>${registro.dni || "-"}</td>
+            <td>${fechaHTML}</td>
+            <td>${dniHTML}</td>
             <td>${registro.nombre || "-"}</td>
             <td>${registro.turno || "-"}</td>
             <td>${registro.horaEntrada || "-"}</td>
